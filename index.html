@@ -1197,35 +1197,127 @@
       margin-top: 8px;
     }
     .xp-bar {
-      height: 12px;
-      background: var(--white-10);
-      border-radius: 6px;
+      height: 18px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 10px;
+      overflow: visible;
+      position: relative;
+    }
+    .xp-bar-track {
+      height: 100%;
+      border-radius: 10px;
       overflow: hidden;
       position: relative;
     }
     .xp-bar-fill {
       height: 100%;
-      border-radius: 6px;
+      border-radius: 10px;
       background: linear-gradient(90deg, var(--violet), var(--pink));
-      transition: width 1s ease-out;
+      transition: width 1.4s cubic-bezier(0.22, 1, 0.36, 1);
       position: relative;
     }
     .xp-bar-fill::after {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 50%, transparent 100%);
       animation: shimmer 2s infinite;
+      border-radius: 10px;
+    }
+    .xp-bar-glow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 0 12px 4px rgba(139,92,246,0.7), 0 0 4px 2px white;
+      transition: left 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+      z-index: 2;
     }
     .xp-bar-labels {
       display: flex;
       justify-content: space-between;
-      margin-top: 6px;
+      margin-top: 8px;
       font-size: 11px;
       color: var(--white-40);
+    }
+    .xp-bar-pct {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--violet);
+    }
+
+    /* Trilha de níveis */
+    .level-trail {
+      position: relative;
+      padding: 20px 0 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .level-trail::-webkit-scrollbar { display: none; }
+    .level-trail-track {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      min-width: max-content;
+      padding: 0 12px;
+    }
+    .level-trail-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    .level-trail-node-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      border: 2px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      transition: all 0.3s;
+      cursor: default;
+    }
+    .level-trail-node.done .level-trail-node-dot {
+      background: linear-gradient(135deg, var(--violet), var(--pink));
+      border-color: var(--violet);
+      box-shadow: 0 0 12px rgba(139,92,246,0.5);
+    }
+    .level-trail-node.current .level-trail-node-dot {
+      background: linear-gradient(135deg, #eab308, #ca8a04);
+      border-color: #eab308;
+      box-shadow: 0 0 16px rgba(234,179,8,0.6);
+      animation: pulse 2s ease-in-out infinite;
+      width: 44px;
+      height: 44px;
+      font-size: 20px;
+    }
+    .level-trail-label {
+      font-size: 9px;
+      color: rgba(255,255,255,0.3);
+      margin-top: 5px;
+      text-align: center;
+    }
+    .level-trail-node.done .level-trail-label,
+    .level-trail-node.current .level-trail-label {
+      color: rgba(255,255,255,0.7);
+    }
+    .level-trail-line {
+      height: 3px;
+      width: 28px;
+      background: rgba(255,255,255,0.08);
+      flex-shrink: 0;
+      margin-bottom: 20px;
+    }
+    .level-trail-line.done {
+      background: linear-gradient(90deg, var(--violet), var(--pink));
     }
     
     .xp-source-grid {
@@ -2124,6 +2216,10 @@
     // SISTEMA DE BADGES (50+ BADGES)
     // ============================================
     const BADGES = {
+      // ============================================
+      // BADGES PERMANENTES (nunca resetam)
+      // ============================================
+
       // BADGES DE MARCO INICIAL
       primeira_sessao: {
         id: 'primeira_sessao',
@@ -2510,7 +2606,7 @@
         xpReward: 400
       },
       
-      // BADGES DE DUO/CASAL
+      // BADGES DE DUO/CASAL (permanentes)
       ambos_estudaram: {
         id: 'ambos_estudaram',
         name: 'Dia de Casal',
@@ -2554,10 +2650,113 @@
         xpReward: 5000
       }
     };
+
+    // ============================================
+    // BADGES SEMANAIS (resetam toda semana,
+    // mas o contador de conquistas é mantido)
+    // ============================================
+    const WEEKLY_BADGES = {
+      semana_mais_horas: {
+        id: 'semana_mais_horas',
+        name: 'Rei das Horas',
+        description: 'Estudou mais horas esta semana',
+        emoji: '⏱️',
+        rarity: 'ouro',
+        category: 'semanal',
+        xpReward: 400,
+        icon: '⏱️'
+      },
+      semana_mais_sessoes: {
+        id: 'semana_mais_sessoes',
+        name: 'Mestre da Consistência',
+        description: 'Fez mais sessões esta semana',
+        emoji: '📚',
+        rarity: 'prata',
+        category: 'semanal',
+        xpReward: 300,
+        icon: '📚'
+      },
+      semana_mais_questoes: {
+        id: 'semana_mais_questoes',
+        name: 'Máquina de Questões',
+        description: 'Resolveu mais questões esta semana',
+        emoji: '📝',
+        rarity: 'prata',
+        category: 'semanal',
+        xpReward: 300,
+        icon: '📝'
+      },
+      semana_melhor_acerto: {
+        id: 'semana_melhor_acerto',
+        name: 'Precisão Cirúrgica',
+        description: 'Teve melhor acerto médio esta semana',
+        emoji: '🎯',
+        rarity: 'ouro',
+        category: 'semanal',
+        xpReward: 350,
+        icon: '🎯'
+      },
+      semana_campeao_geral: {
+        id: 'semana_campeao_geral',
+        name: '👑 Campeão da Semana',
+        description: 'Maior pontuação geral da semana',
+        emoji: '🏆',
+        rarity: 'platina',
+        category: 'semanal',
+        xpReward: 600,
+        icon: '🏆'
+      }
+    };
     
     // ============================================
-    // DESAFIOS SEMANAIS
+    // SISTEMA DE CAMPEONATO SEMANAL
     // ============================================
+    
+    // Calcula o número da semana atual (ISO) — reinicia toda segunda-feira
+    const getWeekKey = () => {
+      const now = new Date();
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      const dayOfYear = Math.floor((now - startOfYear) / 86400000);
+      const weekNum = Math.ceil((dayOfYear + startOfYear.getDay() + 1) / 7);
+      return `${now.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+    };
+
+    // Retorna segunda-feira e domingo da semana atual
+    const getWeekRange = () => {
+      const now = new Date();
+      const day = now.getDay(); // 0=dom, 1=seg...
+      const diffToMonday = (day === 0 ? -6 : 1 - day);
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + diffToMonday);
+      monday.setHours(0, 0, 0, 0);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      sunday.setHours(23, 59, 59, 999);
+      return { monday, sunday };
+    };
+
+    // Filtra sessões da semana atual
+    const getWeeklySessions = (sessions) => {
+      const { monday, sunday } = getWeekRange();
+      return sessions.filter(s => {
+        const d = new Date(s.date || s.createdAt || 0);
+        return d >= monday && d <= sunday;
+      });
+    };
+
+    // Calcula stats semanais de um usuário
+    const calcWeeklyStats = (sessions) => {
+      const weekly = getWeeklySessions(sessions);
+      const hours = weekly.reduce((acc, s) => acc + (s.h || 0) + (s.m || 0) / 60, 0);
+      const sessionCount = weekly.length;
+      const questions = weekly.reduce((acc, s) => acc + (s.qT || 0), 0);
+      const correctAnswers = weekly.reduce((acc, s) => acc + (s.qC || 0), 0);
+      const accuracy = questions > 0 ? (correctAnswers / questions) * 100 : 0;
+      const score = Math.round(hours * 40 + sessionCount * 10 + questions * 0.5 + accuracy * 2);
+      return { hours: parseFloat(hours.toFixed(1)), sessionCount, questions, accuracy: parseFloat(accuracy.toFixed(1)), score };
+    };
+
+    // Desafios semanais
     const WEEKLY_CHALLENGES = [
       {
         id: 'mais_horas',
@@ -3318,7 +3517,7 @@
     // ============================================
     // COMPONENTE: SISTEMA DE BADGES
     // ============================================
-    const BadgesScreen = ({ userId, sessions, unlockedBadges, addToast }) => {
+    const BadgesScreen = ({ userId, sessions, unlockedBadges, weeklyBadges, weeklyBadgeCounts, addToast }) => {
       const user = USERS[userId];
       
       const stats = useMemo(() => {
@@ -3363,6 +3562,10 @@
         };
       }, [sessions, unlockedBadges]);
       
+      const [activeTab, setActiveTab] = React.useState('permanentes');
+      const safeWeeklyBadges = weeklyBadges || [];
+      const safeCounts = weeklyBadgeCounts || {};
+
       const badgesByCategory = {
         marcos: Object.values(BADGES).filter(b => b.category === 'marcos'),
         tempo: Object.values(BADGES).filter(b => b.category === 'tempo'),
@@ -3375,71 +3578,149 @@
         duo: Object.values(BADGES).filter(b => b.category === 'duo'),
         final: Object.values(BADGES).filter(b => b.category === 'final')
       };
-      
       const categoryNames = {
-        marcos: '🏁 Marcos Iniciais',
-        tempo: '⏱️ Tempo de Estudo',
-        streak: '🔥 Streaks',
-        performance: '📊 Performance',
-        materias: '📚 Matérias',
-        dificuldade: '💪 Dificuldade',
-        especial: '✨ Especiais',
-        consistencia: '📅 Consistência',
-        duo: '💕 Casal',
-        final: '👑 Finais'
+        marcos: '🏁 Marcos Iniciais', tempo: '⏱️ Tempo de Estudo', streak: '🔥 Streaks',
+        performance: '📊 Performance', materias: '📚 Matérias', dificuldade: '💪 Dificuldade',
+        especial: '✨ Especiais', consistencia: '📅 Consistência', duo: '💕 Casal', final: '👑 Finais'
       };
-      
+
+      const rarityColor = { bronze: '#cd7f32', prata: '#aaa', ouro: '#eab308', platina: '#a78bfa', especial: '#ec4899' };
+
       return React.createElement('div', null,
-        React.createElement('div', { className: 'mb-6' },
+        // Header
+        React.createElement('div', { className: 'mb-4' },
           React.createElement('h2', { className: 'text-2xl font-bold mb-1' }, 'Conquistas'),
-          React.createElement('p', { className: 'text-white-60' }, 
-            `${unlockedBadges.length} de ${Object.keys(BADGES).length} badges desbloqueados`
+          React.createElement('p', { className: 'text-white-60' },
+            `${unlockedBadges.length} permanentes • ${safeWeeklyBadges.length} semanais ativos`
           )
         ),
-        
-        React.createElement(GlassCard, { className: 'mb-4' },
-          React.createElement('div', { className: 'p-5' },
-            React.createElement('div', { className: 'flex items-center justify-between' },
-              React.createElement('div', null,
-                React.createElement('p', { className: 'text-sm text-white-60' }, 'Progresso Total'),
-                React.createElement('p', { className: 'text-3xl font-bold text-gradient' }, 
-                  `${Math.round((unlockedBadges.length / Object.keys(BADGES).length) * 100)}%`
+
+        // Tabs
+        React.createElement('div', { className: 'filter-bar', style: { position: 'relative', marginBottom: '20px' } },
+          React.createElement('button', {
+            className: `filter-btn ${activeTab === 'permanentes' ? 'active' : ''}`,
+            onClick: () => setActiveTab('permanentes')
+          }, '🏅 Permanentes'),
+          React.createElement('button', {
+            className: `filter-btn ${activeTab === 'semanais' ? 'active' : ''}`,
+            onClick: () => setActiveTab('semanais')
+          }, '🔄 Semanais')
+        ),
+
+        // ---- ABA PERMANENTES ----
+        activeTab === 'permanentes' && React.createElement('div', null,
+          React.createElement(GlassCard, { className: 'mb-4' },
+            React.createElement('div', { className: 'p-5' },
+              React.createElement('div', { className: 'flex items-center justify-between' },
+                React.createElement('div', null,
+                  React.createElement('p', { className: 'text-sm text-white-60' }, 'Progresso Total'),
+                  React.createElement('p', { className: 'text-3xl font-bold text-gradient' },
+                    `${Math.round((unlockedBadges.length / Object.keys(BADGES).length) * 100)}%`
+                  ),
+                  React.createElement('p', { style: { fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '4px' } },
+                    `${unlockedBadges.length} de ${Object.keys(BADGES).length} badges`
+                  )
+                ),
+                React.createElement(ProgressRing, { value: unlockedBadges.length, max: Object.keys(BADGES).length, size: 80, color: 'yellow' },
+                  `${unlockedBadges.length}`
+                )
+              )
+            )
+          ),
+          Object.entries(badgesByCategory).map(([category, badges]) =>
+            React.createElement('div', { key: category, className: 'badge-category' },
+              React.createElement('h3', { className: 'badge-category-title' }, categoryNames[category]),
+              React.createElement('div', { className: 'badge-grid' },
+                badges.map(badge => {
+                  const isUnlocked = unlockedBadges.includes(badge.id);
+                  return React.createElement('div', {
+                    key: badge.id,
+                    className: `badge-item ${!isUnlocked ? 'locked' : ''}`
+                  },
+                    React.createElement('span', { className: `badge-rarity ${badge.rarity}` }),
+                    React.createElement('span', { className: 'badge-icon' }, badge.emoji),
+                    React.createElement('p', { className: 'badge-name' }, badge.name),
+                    React.createElement('p', { className: 'badge-desc' }, badge.description),
+                    isUnlocked && React.createElement('span', { className: 'tag tag-gold mt-2', style: { fontSize: '10px' } },
+                      `+${badge.xpReward} XP`
+                    )
+                  );
+                })
+              )
+            )
+          )
+        ),
+
+        // ---- ABA SEMANAIS ----
+        activeTab === 'semanais' && React.createElement('div', null,
+          // Aviso de reset
+          React.createElement('div', {
+            style: {
+              background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.3)',
+              borderRadius: '14px', padding: '14px 16px', marginBottom: '16px',
+              fontSize: '13px', color: 'rgba(255,255,255,0.7)'
+            }
+          },
+            React.createElement('p', { style: { fontWeight: '700', color: '#eab308', marginBottom: '4px' } }, '🔄 Badges Semanais'),
+            React.createElement('p', null, 'Estes títulos são disputados toda semana. Ao registrar o campeão, os badges são resetados — mas seu contador de conquistas é mantido para sempre!')
+          ),
+
+          // Cards dos badges semanais
+          Object.values(WEEKLY_BADGES).map(badge => {
+            const isActive = safeWeeklyBadges.includes(badge.id);
+            const count = safeCounts[badge.id] || 0;
+            return React.createElement('div', {
+              key: badge.id,
+              style: {
+                background: isActive
+                  ? `linear-gradient(135deg, rgba(${badge.rarity === 'platina' ? '167,139,250' : '234,179,8'},0.18) 0%, rgba(139,92,246,0.1) 100%)`
+                  : 'rgba(255,255,255,0.03)',
+                border: `2px solid ${isActive ? (badge.rarity === 'platina' ? 'rgba(167,139,250,0.5)' : 'rgba(234,179,8,0.4)') : 'rgba(255,255,255,0.08)'}`,
+                borderRadius: '18px', padding: '18px', marginBottom: '12px',
+                display: 'flex', alignItems: 'center', gap: '16px',
+                opacity: isActive ? 1 : 0.55
+              }
+            },
+              // Emoji
+              React.createElement('div', {
+                style: {
+                  width: '56px', height: '56px', borderRadius: '16px', fontSize: '28px', flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: isActive
+                    ? `linear-gradient(135deg, ${badge.rarity === 'platina' ? '#a78bfa, #7c3aed' : '#eab308, #ca8a04'})`
+                    : 'rgba(255,255,255,0.06)',
+                  boxShadow: isActive ? `0 4px 20px rgba(${badge.rarity === 'platina' ? '167,139,250' : '234,179,8'},0.4)` : 'none'
+                }
+              }, badge.emoji),
+              // Info
+              React.createElement('div', { style: { flex: 1 } },
+                React.createElement('p', { style: { fontWeight: '700', fontSize: '15px' } }, badge.name),
+                React.createElement('p', { style: { fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '2px' } }, badge.description),
+                React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' } },
+                  isActive && React.createElement('span', {
+                    style: { fontSize: '10px', padding: '3px 10px', borderRadius: '20px', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e', fontWeight: '700' }
+                  }, '✓ Você tem este título!'),
+                  !isActive && React.createElement('span', {
+                    style: { fontSize: '10px', color: 'rgba(255,255,255,0.3)' }
+                  }, 'Não conquistado esta semana')
                 )
               ),
-              React.createElement(ProgressRing, {
-                value: unlockedBadges.length,
-                max: Object.keys(BADGES).length,
-                size: 80,
-                color: 'yellow'
-              }, `${unlockedBadges.length}`)
-            )
-          )
-        ),
-        
-        Object.entries(badgesByCategory).map(([category, badges]) => 
-          React.createElement('div', { key: category, className: 'badge-category' },
-            React.createElement('h3', { className: 'badge-category-title' }, 
-              categoryNames[category]
-            ),
-            React.createElement('div', { className: 'badge-grid' },
-              badges.map(badge => {
-                const isUnlocked = unlockedBadges.includes(badge.id);
-                return React.createElement('div', {
-                  key: badge.id,
-                  className: `badge-item ${!isUnlocked ? 'locked' : ''}`
+              // Contador de conquistas (permanente)
+              React.createElement('div', { style: { textAlign: 'center', flexShrink: 0 } },
+                React.createElement('div', {
+                  style: {
+                    width: '48px', height: '48px', borderRadius: '14px', display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center',
+                    background: count > 0 ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${count > 0 ? 'rgba(139,92,246,0.4)' : 'rgba(255,255,255,0.08)'}`
+                  }
                 },
-                  React.createElement('span', { className: `badge-rarity ${badge.rarity}` }),
-                  React.createElement('span', { className: 'badge-icon' }, badge.emoji),
-                  React.createElement('p', { className: 'badge-name' }, badge.name),
-                  React.createElement('p', { className: 'badge-desc' }, badge.description),
-                  isUnlocked && React.createElement('span', { 
-                    className: 'tag tag-gold mt-2',
-                    style: { fontSize: '10px' }
-                  }, `+${badge.xpReward} XP`)
-                );
-              })
-            )
-          )
+                  React.createElement('span', { style: { fontSize: '20px', fontWeight: '900', color: count > 0 ? '#a78bfa' : 'rgba(255,255,255,0.2)', lineHeight: 1 } }, count),
+                  React.createElement('span', { style: { fontSize: '8px', color: 'rgba(255,255,255,0.3)', marginTop: '2px' } }, count === 1 ? 'vez' : 'vezes')
+                )
+              )
+            );
+          })
         )
       );
     };
@@ -3449,33 +3730,51 @@
     // ============================================
     const LevelScreen = ({ userId, xp, addToast }) => {
       const user = USERS[userId];
-      
+      const [animPct, setAnimPct] = React.useState(0);
+      const [showXP, setShowXP] = React.useState(0);
+
       const currentLevel = useMemo(() => {
         return LEVELS.find(l => xp >= l.minXP && xp < l.maxXP) || LEVELS[LEVELS.length - 1];
       }, [xp]);
-      
+
       const nextLevel = useMemo(() => {
         return LEVELS.find(l => l.level === currentLevel.level + 1);
       }, [currentLevel]);
-      
+
       const xpInLevel = xp - currentLevel.minXP;
-      const xpNeeded = nextLevel ? nextLevel.minXP - currentLevel.minXP : 0;
-      const xpProgress = nextLevel ? (xpInLevel / xpNeeded) * 100 : 100;
-      
+      const xpNeeded = nextLevel ? nextLevel.minXP - currentLevel.minXP : 1;
+      const xpProgress = nextLevel ? Math.min((xpInLevel / xpNeeded) * 100, 100) : 100;
+
+      // Anima a barra e o contador de XP na entrada
+      useEffect(() => {
+        const t1 = setTimeout(() => setAnimPct(xpProgress), 120);
+        let start = 0;
+        const step = xp / 60;
+        const t2 = setInterval(() => {
+          start = Math.min(start + step, xp);
+          setShowXP(Math.floor(start));
+          if (start >= xp) clearInterval(t2);
+        }, 16);
+        return () => { clearTimeout(t1); clearInterval(t2); };
+      }, [xp, xpProgress]);
+
       const xpSources = [
         { name: 'Sessões', icon: '📚', xp: Math.floor(xp * 0.3) },
         { name: 'Questões', icon: '📝', xp: Math.floor(xp * 0.25) },
         { name: 'Streaks', icon: '🔥', xp: Math.floor(xp * 0.2) },
         { name: 'Badges', icon: '🏆', xp: Math.floor(xp * 0.25) }
       ];
-      
+
       return React.createElement('div', null,
+
         React.createElement('div', { className: 'mb-6' },
           React.createElement('h2', { className: 'text-2xl font-bold mb-1' }, 'Nível & XP'),
           React.createElement('p', { className: 'text-white-60' }, 'Acompanhe sua evolução')
         ),
-        
+
+        // ---- CARD PRINCIPAL COM BARRA DE XP ----
         React.createElement('div', { className: 'level-card' },
+
           React.createElement('div', { className: 'level-header' },
             React.createElement('div', { className: 'level-info' },
               React.createElement('div', { className: 'level-badge' }, currentLevel.emoji),
@@ -3485,59 +3784,126 @@
               )
             ),
             React.createElement('div', { className: 'level-xp' },
-              React.createElement('p', { className: 'level-xp-value' }, xp.toLocaleString()),
+              React.createElement('p', { className: 'level-xp-value' }, showXP.toLocaleString('pt-BR')),
               React.createElement('p', { className: 'level-xp-label' }, 'XP Total')
             )
           ),
-          
+
+          // Barra animada com bolinha deslizante
           React.createElement('div', { className: 'xp-bar-container' },
+            React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' } },
+              React.createElement('span', { style: { fontSize: '12px', color: 'rgba(255,255,255,0.5)' } },
+                nextLevel ? `Nível ${currentLevel.level} → ${currentLevel.level + 1}` : 'Nível Máximo'
+              ),
+              React.createElement('span', { className: 'xp-bar-pct' }, `${Math.round(animPct)}%`)
+            ),
             React.createElement('div', { className: 'xp-bar' },
-              React.createElement('div', { 
-                className: 'xp-bar-fill',
-                style: { width: `${xpProgress}%` }
+              React.createElement('div', { className: 'xp-bar-track' },
+                React.createElement('div', {
+                  className: 'xp-bar-fill',
+                  style: { width: `${animPct}%` }
+                })
+              ),
+              // Bolinha deslizante
+              animPct > 2 && React.createElement('div', {
+                className: 'xp-bar-glow',
+                style: { left: `calc(${animPct}% - 10px)` }
               })
             ),
             React.createElement('div', { className: 'xp-bar-labels' },
-              React.createElement('span', null, `${xpInLevel.toLocaleString()} XP`),
-              React.createElement('span', null, nextLevel 
-                ? `Faltam ${(nextLevel.minXP - xp).toLocaleString()} XP para ${nextLevel.name}`
-                : 'Nível Máximo! 🎉'
+              React.createElement('span', null, `${xpInLevel.toLocaleString('pt-BR')} XP neste nível`),
+              React.createElement('span', null, nextLevel
+                ? `Faltam ${(nextLevel.minXP - xp).toLocaleString('pt-BR')} XP`
+                : '🎉 Máximo!'
               )
             )
           )
         ),
-        
+
+        // ---- TRILHA DE NÍVEIS ----
+        React.createElement('div', { className: 'mb-4' },
+          React.createElement('h3', { className: 'text-lg font-semibold mb-3' }, '🗺️ Trilha de Níveis'),
+          React.createElement(GlassCard, null,
+            React.createElement('div', { className: 'level-trail' },
+              React.createElement('div', { className: 'level-trail-track' },
+                LEVELS.map((lvl, i) => {
+                  const isDone = xp >= lvl.maxXP;
+                  const isCurrent = xp >= lvl.minXP && xp < lvl.maxXP;
+                  return React.createElement(React.Fragment, { key: lvl.level },
+                    i > 0 && React.createElement('div', {
+                      className: `level-trail-line ${xp >= lvl.minXP ? 'done' : ''}`
+                    }),
+                    React.createElement('div', {
+                      className: `level-trail-node ${isDone ? 'done' : ''} ${isCurrent ? 'current' : ''}`
+                    },
+                      React.createElement('div', { className: 'level-trail-node-dot' }, lvl.emoji),
+                      React.createElement('span', { className: 'level-trail-label' }, `Nv${lvl.level}`)
+                    )
+                  );
+                })
+              )
+            )
+          )
+        ),
+
+        // ---- PRÓXIMO NÍVEL ----
         nextLevel && React.createElement(GlassCard, { className: 'mb-4' },
           React.createElement('div', { className: 'p-5' },
             React.createElement('div', { className: 'flex items-center gap-4' },
-              React.createElement('div', { 
+              React.createElement('div', {
                 className: 'streak-icon',
-                style: { 
-                  background: `linear-gradient(135deg, ${nextLevel.color}, ${currentLevel.color})`,
-                  width: '48px',
-                  height: '48px',
-                  fontSize: '24px'
-                }
+                style: { background: `linear-gradient(135deg, ${nextLevel.color}, ${currentLevel.color})`, width: '48px', height: '48px', fontSize: '24px' }
               }, nextLevel.emoji),
-              React.createElement('div', null,
+              React.createElement('div', { style: { flex: 1 } },
                 React.createElement('p', { className: 'text-sm text-white-60' }, 'Próximo Nível'),
-                React.createElement('p', { className: 'text-lg font-semibold' }, nextLevel.name)
+                React.createElement('p', { className: 'text-lg font-semibold' }, nextLevel.name),
+                React.createElement('div', { style: { marginTop: '8px', background: 'rgba(255,255,255,0.07)', borderRadius: '8px', height: '6px', overflow: 'hidden' } },
+                  React.createElement('div', {
+                    style: {
+                      height: '100%',
+                      width: `${animPct}%`,
+                      background: `linear-gradient(90deg, ${nextLevel.color}, ${currentLevel.color})`,
+                      borderRadius: '8px',
+                      transition: 'width 1.4s cubic-bezier(0.22,1,0.36,1)'
+                    }
+                  })
+                )
+              ),
+              React.createElement('div', { style: { textAlign: 'right' } },
+                React.createElement('p', { style: { fontSize: '18px', fontWeight: '800', color: '#eab308' } },
+                  (nextLevel.minXP - xp).toLocaleString('pt-BR')
+                ),
+                React.createElement('p', { style: { fontSize: '10px', color: 'rgba(255,255,255,0.4)' } }, 'XP faltando')
               )
             )
           )
         ),
-        
-        React.createElement('h3', { className: 'text-lg font-semibold mb-3' }, 'Fontes de XP'),
+
+        // ---- FONTES DE XP ----
+        React.createElement('h3', { className: 'text-lg font-semibold mb-3' }, '⚡ Fontes de XP'),
         React.createElement('div', { className: 'xp-source-grid' },
-          xpSources.map((source, i) => 
+          xpSources.map((source, i) =>
             React.createElement('div', { key: i, className: 'xp-source-item' },
               React.createElement('div', { className: 'xp-source-icon' }, source.icon),
-              React.createElement('p', { className: 'xp-source-name' }, source.name),
-              React.createElement('p', { className: 'xp-source-value' }, `+${source.xp.toLocaleString()} XP`)
+              React.createElement('div', { style: { flex: 1 } },
+                React.createElement('p', { className: 'xp-source-name' }, source.name),
+                React.createElement('div', { style: { marginTop: '6px', background: 'rgba(255,255,255,0.07)', borderRadius: '4px', height: '4px', overflow: 'hidden' } },
+                  React.createElement('div', {
+                    style: {
+                      height: '100%',
+                      width: `${xp > 0 ? (source.xp / xp) * 100 : 0}%`,
+                      background: 'linear-gradient(90deg, var(--violet), var(--pink))',
+                      borderRadius: '4px'
+                    }
+                  })
+                )
+              ),
+              React.createElement('p', { className: 'xp-source-value' }, `+${source.xp.toLocaleString('pt-BR')} XP`)
             )
           )
         ),
-        
+
+        // ---- COMO GANHAR XP ----
         React.createElement('div', { className: 'mt-6' },
           React.createElement('h3', { className: 'text-lg font-semibold mb-3' }, 'Como Ganhar XP'),
           React.createElement(GlassCard, null,
@@ -3575,148 +3941,286 @@
     // ============================================
     // COMPONENTE: LEADERBOARD E DESAFIOS
     // ============================================
-    const ChallengesScreen = ({ userId, sessions, partnerSessions, addToast }) => {
+    const ChallengesScreen = ({ userId, sessions, partnerSessions, userData, addToast }) => {
       const user = USERS[userId];
       const partner = USERS[user.partner];
-      
-      const userStats = useMemo(() => ({
-        totalHours: sessions.reduce((acc, s) => acc + (s.h || 0) + (s.m || 0) / 60, 0),
-        totalSessions: sessions.length,
-        totalQuestions: sessions.reduce((acc, s) => acc + (s.qT || 0), 0),
-        avgAccuracy: sessions.filter(s => s.qT > 0).length > 0
-          ? sessions.filter(s => s.qT > 0).reduce((acc, s) => acc + (s.qC / s.qT) * 100, 0) / sessions.filter(s => s.qT > 0).length
-          : 0
-      }), [sessions]);
-      
-      const partnerStats = useMemo(() => ({
-        totalHours: partnerSessions.reduce((acc, s) => acc + (s.h || 0) + (s.m || 0) / 60, 0),
-        totalSessions: partnerSessions.length,
-        totalQuestions: partnerSessions.reduce((acc, s) => acc + (s.qT || 0), 0),
-        avgAccuracy: partnerSessions.filter(s => s.qT > 0).length > 0
-          ? partnerSessions.filter(s => s.qT > 0).reduce((acc, s) => acc + (s.qC / s.qT) * 100, 0) / partnerSessions.filter(s => s.qT > 0).length
-          : 0
-      }), [partnerSessions]);
-      
-      const rankings = [
-        { 
-          name: user.name, 
-          emoji: user.emoji, 
-          score: Math.round(userStats.totalHours * 10), 
-          stats: `${userStats.totalSessions} sessões`,
-          isUser: true 
-        },
-        { 
-          name: partner.name, 
-          emoji: partner.emoji, 
-          score: Math.round(partnerStats.totalHours * 10), 
-          stats: `${partnerStats.totalSessions} sessões`,
-          isUser: false 
+      const weekKey = getWeekKey();
+      const { monday, sunday } = getWeekRange();
+
+      // Stats semanais em tempo real
+      const myWeekly = useMemo(() => calcWeeklyStats(sessions), [sessions]);
+      const partnerWeekly = useMemo(() => calcWeeklyStats(partnerSessions), [partnerSessions]);
+
+      // Quem está ganhando esta semana
+      const iAmLeading = myWeekly.score >= partnerWeekly.score;
+      const myPct = myWeekly.score + partnerWeekly.score > 0
+        ? Math.round((myWeekly.score / (myWeekly.score + partnerWeekly.score)) * 100)
+        : 50;
+
+      // Histórico de campeões salvo no localStorage (e Firebase se disponível)
+      const [champions, setChampions] = React.useState(() => {
+        try {
+          return JSON.parse(localStorage.getItem('manaKelinha_champions') || '[]');
+        } catch { return []; }
+      });
+
+      // Número de títulos de cada um
+      const myTitles = champions.filter(c => c.winner === userId).length;
+      const partnerTitles = champions.filter(c => c.winner === user.partner).length;
+
+      // Verifica se já foi registrado o campeão desta semana
+      const thisWeekChamp = champions.find(c => c.week === weekKey);
+
+      // Registrar campeão da semana (chamado manualmente ou automático na virada)
+      const crownChampion = () => {
+        if (thisWeekChamp) { addToast('Campeão desta semana já foi registrado!', 'info'); return; }
+        if (myWeekly.score === 0 && partnerWeekly.score === 0) { addToast('Nenhum estudo registrado esta semana ainda!', 'error'); return; }
+        const winner = myWeekly.score >= partnerWeekly.score ? userId : user.partner;
+        const badgeWinners = {
+          semana_mais_horas: myWeekly.hours >= partnerWeekly.hours ? userId : user.partner,
+          semana_mais_sessoes: myWeekly.sessionCount >= partnerWeekly.sessionCount ? userId : user.partner,
+          semana_mais_questoes: myWeekly.questions >= partnerWeekly.questions ? userId : user.partner,
+          semana_melhor_acerto: myWeekly.accuracy >= partnerWeekly.accuracy ? userId : user.partner,
+          semana_campeao_geral: winner
+        };
+        const newChamp = {
+          week: weekKey,
+          weekLabel: `${monday.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} – ${sunday.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`,
+          winner,
+          winnerEmoji: USERS[winner].emoji,
+          winnerName: USERS[winner].name,
+          myScore: myWeekly.score,
+          partnerScore: partnerWeekly.score,
+          myHours: myWeekly.hours,
+          partnerHours: partnerWeekly.hours,
+          badges: badgeWinners,
+          crowned: new Date().toISOString()
+        };
+        const updated = [newChamp, ...champions].slice(0, 52);
+        setChampions(updated);
+        localStorage.setItem('manaKelinha_champions', JSON.stringify(updated));
+        if (window.firebaseReady && window.db) {
+          window.db.collection('data').doc('champions').set({ list: updated });
         }
-      ].sort((a, b) => b.score - a.score);
-      
-      const currentChallenge = WEEKLY_CHALLENGES[0];
-      const userWinning = rankings[0].isUser;
-      
+        addToast(`👑 ${USERS[winner].name} é o Campeão da Semana!`, 'success');
+        // App escuta este evento para atualizar weeklyBadges e contadores
+        window.dispatchEvent(new CustomEvent('weeklyBadgesAwarded', { detail: { champ: newChamp, weekKey } }));
+      };
+
+      // Dias restantes na semana
+      const now = new Date();
+      const daysLeft = Math.ceil((sunday - now) / 86400000);
+      const hoursLeft = Math.ceil((sunday - now) / 3600000);
+      const timeLabel = daysLeft > 1 ? `${daysLeft} dias` : daysLeft === 1 ? 'Menos de 1 dia' : `${hoursLeft}h`;
+
+      // Streak de vitórias consecutivas
+      let myStreak = 0;
+      for (const c of champions) {
+        if (c.winner === userId) myStreak++;
+        else break;
+      }
+      let partnerStreak = 0;
+      for (const c of champions) {
+        if (c.winner === user.partner) partnerStreak++;
+        else break;
+      }
+
       return React.createElement('div', null,
+
+        // ---- CABEÇALHO ----
         React.createElement('div', { className: 'mb-6' },
-          React.createElement('h2', { className: 'text-2xl font-bold mb-1' }, 'Desafios'),
-          React.createElement('p', { className: 'text-white-60' }, 'Compita e evolua juntos!')
+          React.createElement('h2', { className: 'text-2xl font-bold mb-1' }, '🏆 Campeonato Semanal'),
+          React.createElement('p', { className: 'text-white-60' }, 'Defenda seu título toda semana!')
         ),
-        
-        React.createElement('div', { className: 'leaderboard-card' },
-          React.createElement('div', { className: 'leaderboard-header' },
-            React.createElement('div', null,
-              React.createElement('h3', { className: 'leaderboard-title' }, '🏆 Ranking do Casal')
-            ),
-            React.createElement('span', { className: 'leaderboard-period' }, 'Sempre atualizado')
+
+        // ---- CINTURÃO / TÍTULO ATUAL ----
+        React.createElement('div', {
+          style: {
+            background: 'linear-gradient(135deg, rgba(234,179,8,0.18) 0%, rgba(139,92,246,0.12) 100%)',
+            border: '2px solid rgba(234,179,8,0.4)',
+            borderRadius: '20px',
+            padding: '20px',
+            marginBottom: '16px',
+            textAlign: 'center'
+          }
+        },
+          React.createElement('p', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '6px' } }, '👑 Campeão Atual'),
+          thisWeekChamp
+            ? React.createElement('div', null,
+                React.createElement('div', { style: { fontSize: '52px', marginBottom: '4px' } }, USERS[thisWeekChamp.winner].emoji),
+                React.createElement('p', { style: { fontSize: '22px', fontWeight: '800', color: '#eab308' } }, USERS[thisWeekChamp.winner].name),
+                React.createElement('p', { style: { fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' } }, `Semana ${thisWeekChamp.weekLabel}`),
+                React.createElement('span', { className: 'tag tag-gold', style: { marginTop: '10px', display: 'inline-block' } }, '🏅 Título defendido com sucesso!')
+              )
+            : React.createElement('div', null,
+                React.createElement('div', { style: { fontSize: '52px', marginBottom: '4px' } }, '❓'),
+                React.createElement('p', { style: { fontSize: '18px', fontWeight: '700', color: 'rgba(255,255,255,0.7)' } }, 'Título em disputa!'),
+                React.createElement('p', { style: { fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '4px' } }, `Encerra em ${timeLabel}`)
+              )
+        ),
+
+        // ---- DUELO DA SEMANA EM TEMPO REAL ----
+        React.createElement('div', {
+          style: {
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '20px',
+            padding: '20px',
+            marginBottom: '16px'
+          }
+        },
+          React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
+            React.createElement('h3', { className: 'text-lg font-semibold' }, '⚔️ Duelo da Semana'),
+            React.createElement('span', {
+              style: {
+                fontSize: '11px', padding: '3px 10px', borderRadius: '20px',
+                background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e'
+              }
+            }, '● Ao vivo')
           ),
-          
-          rankings.map((rank, i) => 
-            React.createElement('div', { 
-              key: rank.name, 
-              className: 'leaderboard-item',
-              style: rank.isUser ? { border: '1px solid rgba(139,92,246,0.3)' } : {}
-            },
-              React.createElement('div', { 
-                className: `leaderboard-rank ${i === 0 ? 'gold' : 'silver'}` 
-              }, i + 1),
-              React.createElement('div', { 
-                className: 'leaderboard-avatar',
-                style: { 
-                  background: rank.isUser 
-                    ? 'linear-gradient(135deg, #8b5cf6, #7c3aed)' 
-                    : 'linear-gradient(135deg, #ec4899, #db2777)' 
+
+          // Players
+          React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' } },
+            // EU
+            React.createElement('div', { style: { flex: 1, textAlign: 'center' } },
+              React.createElement('div', {
+                style: {
+                  width: '52px', height: '52px', borderRadius: '14px', fontSize: '26px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px',
+                  background: iAmLeading ? 'linear-gradient(135deg, #eab308, #ca8a04)' : 'rgba(139,92,246,0.3)',
+                  border: iAmLeading ? '2px solid #eab308' : '2px solid rgba(139,92,246,0.4)'
                 }
-              }, rank.emoji),
-              React.createElement('div', { className: 'leaderboard-info' },
-                React.createElement('p', { className: 'leaderboard-name' }, 
-                  rank.name,
-                  rank.isUser && React.createElement('span', { className: 'tag tag-primary ml-2', style: { fontSize: '9px' } }, 'Você')
+              }, iAmLeading ? '👑' : user.emoji),
+              React.createElement('p', { style: { fontWeight: '700', fontSize: '15px' } }, user.name),
+              React.createElement('p', { style: { color: '#8b5cf6', fontWeight: '800', fontSize: '20px', margin: '2px 0' } }, myWeekly.score),
+              React.createElement('p', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.4)' } }, 'pontos'),
+              React.createElement('div', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '6px' } },
+                React.createElement('div', null, `⏱️ ${myWeekly.hours}h`),
+                React.createElement('div', null, `📚 ${myWeekly.sessionCount} sessões`),
+                React.createElement('div', null, `📝 ${myWeekly.questions} questões`)
+              )
+            ),
+            // VS
+            React.createElement('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' } },
+              React.createElement('div', { style: { fontSize: '18px', fontWeight: '900', color: 'rgba(255,255,255,0.3)' } }, 'VS'),
+              React.createElement('div', { style: { fontSize: '10px', color: 'rgba(255,255,255,0.25)', textAlign: 'center' } }, `${timeLabel}\nrestantes`)
+            ),
+            // PARCEIRO
+            React.createElement('div', { style: { flex: 1, textAlign: 'center' } },
+              React.createElement('div', {
+                style: {
+                  width: '52px', height: '52px', borderRadius: '14px', fontSize: '26px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px',
+                  background: !iAmLeading ? 'linear-gradient(135deg, #eab308, #ca8a04)' : 'rgba(236,72,153,0.3)',
+                  border: !iAmLeading ? '2px solid #eab308' : '2px solid rgba(236,72,153,0.4)'
+                }
+              }, !iAmLeading ? '👑' : partner.emoji),
+              React.createElement('p', { style: { fontWeight: '700', fontSize: '15px' } }, partner.name),
+              React.createElement('p', { style: { color: '#ec4899', fontWeight: '800', fontSize: '20px', margin: '2px 0' } }, partnerWeekly.score),
+              React.createElement('p', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.4)' } }, 'pontos'),
+              React.createElement('div', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '6px' } },
+                React.createElement('div', null, `⏱️ ${partnerWeekly.hours}h`),
+                React.createElement('div', null, `📚 ${partnerWeekly.sessionCount} sessões`),
+                React.createElement('div', null, `📝 ${partnerWeekly.questions} questões`)
+              )
+            )
+          ),
+
+          // Barra de progresso do duelo
+          React.createElement('div', { style: { background: 'rgba(255,255,255,0.08)', borderRadius: '10px', height: '10px', overflow: 'hidden', position: 'relative' } },
+            React.createElement('div', {
+              style: {
+                height: '100%', width: `${myPct}%`,
+                background: 'linear-gradient(90deg, #8b5cf6, #ec4899)',
+                borderRadius: '10px', transition: 'width 0.8s ease'
+              }
+            })
+          ),
+          React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: '6px' } },
+            React.createElement('span', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.4)' } }, `${user.name}: ${myPct}%`),
+            React.createElement('span', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.4)' } }, `${partner.name}: ${100 - myPct}%`)
+          ),
+
+          // Como é calculada a pontuação
+          React.createElement('div', { style: { marginTop: '12px', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', fontSize: '11px', color: 'rgba(255,255,255,0.35)' } },
+            '📊 Pontuação: horas × 40 + sessões × 10 + questões × 0.5 + acerto × 2'
+          )
+        ),
+
+        // ---- REGISTRAR CAMPEÃO ----
+        !thisWeekChamp && React.createElement('button', {
+          onClick: crownChampion,
+          style: {
+            width: '100%', padding: '14px', borderRadius: '14px', border: 'none', cursor: 'pointer', marginBottom: '16px',
+            background: 'linear-gradient(135deg, #eab308, #ca8a04)',
+            color: '#000', fontWeight: '800', fontSize: '15px'
+          }
+        }, '👑 Registrar Campeão desta Semana'),
+
+        // ---- PLACAR DE TÍTULOS ----
+        React.createElement('div', {
+          style: {
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '20px', padding: '20px', marginBottom: '16px'
+          }
+        },
+          React.createElement('h3', { className: 'text-lg font-semibold mb-4' }, '🥇 Placar de Títulos'),
+          React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' } },
+            [
+              { id: userId, name: user.name, emoji: user.emoji, titles: myTitles, streak: myStreak, color: '#8b5cf6' },
+              { id: user.partner, name: partner.name, emoji: partner.emoji, titles: partnerTitles, streak: partnerStreak, color: '#ec4899' }
+            ].map(p =>
+              React.createElement('div', {
+                key: p.id,
+                style: {
+                  textAlign: 'center', padding: '16px', borderRadius: '16px',
+                  background: `rgba(${p.color === '#8b5cf6' ? '139,92,246' : '236,72,153'},0.1)`,
+                  border: `1px solid ${p.color}40`
+                }
+              },
+                React.createElement('div', { style: { fontSize: '36px', marginBottom: '6px' } }, p.emoji),
+                React.createElement('p', { style: { fontWeight: '700' } }, p.name),
+                React.createElement('p', { style: { fontSize: '32px', fontWeight: '900', color: p.color } }, p.titles),
+                React.createElement('p', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.4)' } }, p.titles === 1 ? 'título' : 'títulos'),
+                p.streak >= 2 && React.createElement('div', { style: { marginTop: '8px', fontSize: '11px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(234,179,8,0.15)', color: '#eab308', display: 'inline-block' } },
+                  `🔥 ${p.streak}x seguidos`
+                )
+              )
+            )
+          )
+        ),
+
+        // ---- HISTÓRICO DE CAMPEÕES ----
+        champions.length > 0 && React.createElement('div', {
+          style: {
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '20px', padding: '20px'
+          }
+        },
+          React.createElement('h3', { className: 'text-lg font-semibold mb-4' }, '📜 Histórico de Campeões'),
+          champions.map((c, i) =>
+            React.createElement('div', {
+              key: c.week,
+              style: {
+                display: 'flex', alignItems: 'center', gap: '12px', padding: '12px',
+                borderRadius: '14px', marginBottom: '8px',
+                background: i === 0 ? 'rgba(234,179,8,0.1)' : 'rgba(255,255,255,0.03)',
+                border: i === 0 ? '1px solid rgba(234,179,8,0.3)' : '1px solid rgba(255,255,255,0.06)'
+              }
+            },
+              React.createElement('div', { style: { fontSize: '28px' } }, c.winnerEmoji),
+              React.createElement('div', { style: { flex: 1 } },
+                React.createElement('p', { style: { fontWeight: '700', fontSize: '14px' } },
+                  c.winnerName,
+                  i === 0 && React.createElement('span', { style: { marginLeft: '6px', fontSize: '10px', color: '#eab308' } }, '← mais recente')
                 ),
-                React.createElement('p', { className: 'leaderboard-stats' }, rank.stats)
+                React.createElement('p', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.4)' } }, `Semana ${c.weekLabel}`)
               ),
-              React.createElement('div', { className: 'leaderboard-score' },
-                React.createElement('p', { className: 'leaderboard-score-value' }, rank.score),
-                React.createElement('p', { className: 'leaderboard-score-label' }, 'pontos')
-              )
-            )
-          )
-        ),
-        
-        React.createElement('h3', { className: 'text-lg font-semibold mb-3' }, 'Desafio Ativo'),
-        React.createElement('div', { className: `challenge-card ${userWinning ? 'active' : ''}` },
-          React.createElement('div', { className: 'challenge-header' },
-            React.createElement('div', { className: 'challenge-icon' }, currentChallenge.emoji),
-            React.createElement('div', { className: 'challenge-info' },
-              React.createElement('p', { className: 'challenge-title' }, currentChallenge.title),
-              React.createElement('p', { className: 'challenge-desc' }, currentChallenge.description)
-            )
-          ),
-          
-          React.createElement('div', { className: 'challenge-reward' },
-            React.createElement('div', { className: 'challenge-reward-item' },
-              '✨', `+${currentChallenge.reward.xp} XP`
-            ),
-            React.createElement('div', { className: 'challenge-reward-item' },
-              '🏆', currentChallenge.reward.badge
-            )
-          ),
-          
-          React.createElement('div', { className: 'challenge-progress' },
-            React.createElement('div', { className: 'challenge-progress-bar' },
-              React.createElement('div', { 
-                className: 'challenge-progress-fill',
-                style: { width: `${userWinning ? 100 : 50}%` }
-              })
-            ),
-            React.createElement('p', { className: 'challenge-progress-text' }, 
-              userWinning 
-                ? '🎉 Você está na frente!' 
-                : '💪 Continue estudando para ultrapassar!'
-            )
-          ),
-          
-          React.createElement('span', { className: `challenge-status ${userWinning ? 'completed' : 'active'}` },
-            userWinning ? 'Ganhando!' : 'Em andamento'
-          )
-        ),
-        
-        React.createElement('h3', { className: 'text-lg font-semibold mb-3 mt-6' }, 'Próximos Desafios'),
-        WEEKLY_CHALLENGES.slice(1, 4).map((challenge, i) => 
-          React.createElement('div', { key: challenge.id, className: 'challenge-card' },
-            React.createElement('div', { className: 'challenge-header' },
-              React.createElement('div', { className: 'challenge-icon' }, challenge.emoji),
-              React.createElement('div', { className: 'challenge-info' },
-                React.createElement('p', { className: 'challenge-title' }, challenge.title),
-                React.createElement('p', { className: 'challenge-desc' }, challenge.description)
-              )
-            ),
-            React.createElement('div', { className: 'challenge-reward' },
-              React.createElement('div', { className: 'challenge-reward-item' },
-                '✨', `+${challenge.reward.xp} XP`
-              ),
-              React.createElement('div', { className: 'challenge-reward-item' },
-                '🏆', challenge.reward.badge
+              React.createElement('div', { style: { textAlign: 'right' } },
+                React.createElement('p', { style: { fontSize: '16px', fontWeight: '800', color: '#eab308' } }, c.myScore > c.partnerScore && c.winner === userId ? c.myScore : c.partnerScore),
+                React.createElement('p', { style: { fontSize: '10px', color: 'rgba(255,255,255,0.35)' } }, 'vs ' + (c.myScore > c.partnerScore && c.winner === userId ? c.partnerScore : c.myScore))
               )
             )
           )
@@ -4242,6 +4746,7 @@
       const [currentScreen, setCurrentScreen] = useState('dashboard');
       const [toasts, setToasts] = useState([]);
       const [editingSession, setEditingSession] = useState(null);
+      const [showLogoutModal, setShowLogoutModal] = useState(false);
       
       // Estado para status online do parceiro
       const [partnerOnlineStatus, setPartnerOnlineStatus] = useState({
@@ -4260,15 +4765,16 @@
       const [userData, setUserData] = useState(() => {
         try {
           const saved = localStorage.getItem('manaKelinha_userData');
-          return saved ? JSON.parse(saved) : {
-            mana: { xp: 0, level: 1, streak: 0, unlockedBadges: [] },
-            kelinha: { xp: 0, level: 1, streak: 0, unlockedBadges: [] }
+          const base = saved ? JSON.parse(saved) : null;
+          const defaultUser = { xp: 0, level: 1, streak: 0, unlockedBadges: [], weeklyBadges: [], weeklyBadgeCounts: {}, lastWeekKey: '' };
+          if (!base) return { mana: { ...defaultUser }, kelinha: { ...defaultUser } };
+          return {
+            mana: { ...defaultUser, ...base.mana },
+            kelinha: { ...defaultUser, ...base.kelinha }
           };
         } catch(e) {
-          return {
-            mana: { xp: 0, level: 1, streak: 0, unlockedBadges: [] },
-            kelinha: { xp: 0, level: 1, streak: 0, unlockedBadges: [] }
-          };
+          const d = { xp: 0, level: 1, streak: 0, unlockedBadges: [], weeklyBadges: [], weeklyBadgeCounts: {}, lastWeekKey: '' };
+          return { mana: { ...d }, kelinha: { ...d } };
         }
       });
 
@@ -4358,6 +4864,37 @@
         };
       }, [currentUser]);
       
+      // Escuta evento de badges semanais concedidas
+      useEffect(() => {
+        const handler = (e) => {
+          const { champ, weekKey } = e.detail;
+          if (!champ || !champ.badges) return;
+          // Para cada badge semanal, incrementa o contador do vencedor e reseta o do outro
+          setUserData(prev => {
+            const next = { ...prev };
+            ['mana', 'kelinha'].forEach(uid => {
+              const userBadges = [];
+              const counts = { ...(prev[uid].weeklyBadgeCounts || {}) };
+              Object.entries(champ.badges).forEach(([badgeId, winnerId]) => {
+                if (winnerId === uid) {
+                  userBadges.push(badgeId);
+                  counts[badgeId] = (counts[badgeId] || 0) + 1;
+                }
+              });
+              next[uid] = {
+                ...prev[uid],
+                weeklyBadges: userBadges,        // reset a cada semana
+                weeklyBadgeCounts: counts,        // acumula para sempre
+                lastWeekKey: weekKey
+              };
+            });
+            return next;
+          });
+        };
+        window.addEventListener('weeklyBadgesAwarded', handler);
+        return () => window.removeEventListener('weeklyBadgesAwarded', handler);
+      }, []);
+
       const addToast = (message, type = 'info', xp = 0) => {
         const id = Date.now();
         setToasts(prev => [...prev, { id, message, type, xp }]);
@@ -4487,12 +5024,13 @@
         setCurrentScreen('session');
       };
       
-      const handleLogout = () => {
-        if (currentUser) {
-          window.DataLayer.saveOnlineStatus(currentUser, false);
-        }
+      const handleLogout = () => setShowLogoutModal(true);
+
+      const confirmLogout = () => {
+        if (currentUser) window.DataLayer.saveOnlineStatus(currentUser, false);
         if (partnerUnsubRef.current) partnerUnsubRef.current();
         if (onlineUnsubRef.current) onlineUnsubRef.current();
+        setShowLogoutModal(false);
         setCurrentUser(null);
         setCurrentScreen('dashboard');
         setEditingSession(null);
@@ -4506,7 +5044,7 @@
       const user = USERS[currentUser];
       const userSessions = sessions[currentUser] || [];
       const partnerSessions = sessions[user.partner] || [];
-      const { xp, level, streak, unlockedBadges } = userData[currentUser];
+      const { xp, level, streak, unlockedBadges, weeklyBadges = [], weeklyBadgeCounts = {} } = userData[currentUser];
       const partnerData = userData[user.partner];
       
       // Toast container
@@ -4608,6 +5146,8 @@
             userId: currentUser,
             sessions: userSessions,
             unlockedBadges,
+            weeklyBadges,
+            weeklyBadgeCounts,
             addToast
           });
           break;
@@ -4623,6 +5163,7 @@
             userId: currentUser,
             sessions: userSessions,
             partnerSessions,
+            userData,
             addToast
           });
           break;
@@ -4687,8 +5228,52 @@
         )
       );
 
+      // Modal de Logout
+      const logoutModal = showLogoutModal && React.createElement('div', {
+        style: {
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        },
+        onClick: () => setShowLogoutModal(false)
+      },
+        React.createElement('div', {
+          style: {
+            background: 'linear-gradient(135deg, rgba(20,15,30,0.98) 0%, rgba(15,10,25,0.98) 100%)',
+            border: '1px solid rgba(139,92,246,0.3)', borderRadius: '24px',
+            padding: '32px 28px', width: '100%', maxWidth: '340px', textAlign: 'center',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.6)'
+          },
+          onClick: (e) => e.stopPropagation()
+        },
+          React.createElement('div', { style: { fontSize: '52px', marginBottom: '12px' } }, user.emoji),
+          React.createElement('h3', { style: { fontSize: '20px', fontWeight: '800', marginBottom: '8px' } }, `Sair, ${user.name}?`),
+          React.createElement('p', { style: { fontSize: '14px', color: 'rgba(255,255,255,0.5)', marginBottom: '24px' } },
+            'Seu progresso está salvo. Até logo! 💕'
+          ),
+          React.createElement('div', { style: { display: 'flex', gap: '12px' } },
+            React.createElement('button', {
+              onClick: () => setShowLogoutModal(false),
+              style: {
+                flex: 1, padding: '14px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.12)',
+                background: 'rgba(255,255,255,0.05)', color: 'white', fontWeight: '600', fontSize: '14px', cursor: 'pointer'
+              }
+            }, 'Cancelar'),
+            React.createElement('button', {
+              onClick: confirmLogout,
+              style: {
+                flex: 1, padding: '14px', borderRadius: '14px', border: 'none', cursor: 'pointer',
+                background: 'linear-gradient(135deg, #8b5cf6, #ec4899)',
+                color: 'white', fontWeight: '700', fontSize: '14px'
+              }
+            }, 'Sair')
+          )
+        )
+      );
+
       return React.createElement(React.Fragment, null,
         toastContainer,
+        logoutModal,
         topBar,
         sidebar,
         React.createElement('main', { className: 'content' }, mainContent),
