@@ -921,18 +921,8 @@
       gap: 8px;
       margin-bottom: 16px;
       overflow-x: auto;
-      padding-bottom: 4px;
+      padding-bottom: 8px;
       scrollbar-width: none;
-      position: sticky;
-      top: 72px;
-      z-index: 50;
-      background: linear-gradient(180deg, rgba(10,10,15,0.97) 80%, transparent 100%);
-      padding-top: 10px;
-      padding-bottom: 10px;
-      margin-left: -16px;
-      margin-right: -16px;
-      padding-left: 16px;
-      padding-right: 16px;
     }
     .filter-bar::-webkit-scrollbar { display: none; }
     .filter-btn {
@@ -1923,7 +1913,8 @@
         display: none;
         flex-direction: column;
         width: 280px;
-        min-height: 100vh;
+        height: 100vh;
+        overflow: hidden;
         background: linear-gradient(180deg, rgba(10,10,15,0.98) 0%, rgba(10,10,15,0.95) 100%);
         backdrop-filter: blur(20px);
         border-right: 1px solid var(--border);
@@ -1952,7 +1943,12 @@
       .nav-sidebar .nav-items {
         flex-direction: column;
         gap: 8px;
+        flex: 1;
+        overflow-y: auto;
+        scrollbar-width: none;
+        min-height: 0;
       }
+      .nav-sidebar .nav-items::-webkit-scrollbar { display: none; }
       .nav-sidebar .nav-item {
         flex-direction: row;
         justify-content: flex-start;
@@ -1995,9 +1991,7 @@
         padding: 100px 40px 40px;
       }
       
-      .filter-bar {
-        top: 80px;
-      }
+
       
       .stats-grid { grid-template-columns: repeat(4, 1fr); }
       .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
@@ -2189,27 +2183,75 @@
     // ============================================
     // DATA LIMITE DA PROVA
     // ============================================
-    const EXAM_DATE = new Date('2026-11-09T23:59:59');
+    const EXAM_DATE_ENEM = new Date('2026-11-09T23:59:59'); // ENEM 2026
+    const EXAM_DATE_OAB  = new Date('2026-10-11T23:59:59'); // OAB XLI — outubro 2026 (1ª fase)
+    const EXAM_DATE = EXAM_DATE_ENEM; // fallback global
     
     // ============================================
     // SISTEMA DE NÍVEIS E XP
     // ============================================
     const LEVELS = [
-      { level: 1, name: 'Estudante Curioso', minXP: 0, maxXP: 500, emoji: '📚', color: '#8b5cf6' },
-      { level: 2, name: 'Aprendiz Dedicado', minXP: 500, maxXP: 1200, emoji: '📖', color: '#7c3aed' },
-      { level: 3, name: 'Discípulo Esforçado', minXP: 1200, maxXP: 2200, emoji: '✏️', color: '#a855f7' },
-      { level: 4, name: 'Conhecedor Ativo', minXP: 2200, maxXP: 3500, emoji: '🎯', color: '#9333ea' },
-      { level: 5, name: 'Estudante Avançado', minXP: 3500, maxXP: 5000, emoji: '🚀', color: '#8b5cf6' },
-      { level: 6, name: 'Especialista em Formação', minXP: 5000, maxXP: 6800, emoji: '🔬', color: '#7c3aed' },
-      { level: 7, name: 'Mestre do Conhecimento', minXP: 6800, maxXP: 9000, emoji: '🎓', color: '#a855f7' },
-      { level: 8, name: 'Sábio Aprendiz', minXP: 9000, maxXP: 11500, emoji: '🦉', color: '#9333ea' },
-      { level: 9, name: 'Guru dos Estudos', minXP: 11500, maxXP: 14500, emoji: '👑', color: '#fbbf24' },
-      { level: 10, name: 'Lenda Acadêmica', minXP: 14500, maxXP: 18000, emoji: '🏆', color: '#f59e0b' },
-      { level: 11, name: 'Mestre Supremo', minXP: 18000, maxXP: 22000, emoji: '💎', color: '#d946ef' },
-      { level: 12, name: 'Deus do Conhecimento', minXP: 22000, maxXP: 27000, emoji: '🔱', color: '#8b5cf6' },
-      { level: 13, name: 'Titã da Sabedoria', minXP: 27000, maxXP: 33000, emoji: '⚡', color: '#eab308' },
-      { level: 14, name: 'Imortal Acadêmico', minXP: 33000, maxXP: 40000, emoji: '🌟', color: '#f97316' },
-      { level: 15, name: 'Entidade do Saber', minXP: 40000, maxXP: Infinity, emoji: '👁️', color: '#ec4899' }
+      // Fase 1: Início da Jornada (1–8) — primeiros 30 dias
+      { level: 1,  name: 'Estudante Curioso',       minXP: 0,       maxXP: 400,     emoji: '📚', color: '#94a3b8' },
+      { level: 2,  name: 'Aprendiz Dedicado',        minXP: 400,     maxXP: 900,     emoji: '📖', color: '#8b5cf6' },
+      { level: 3,  name: 'Discípulo Esforçado',      minXP: 900,     maxXP: 1600,    emoji: '✏️', color: '#7c3aed' },
+      { level: 4,  name: 'Conhecedor Ativo',          minXP: 1600,    maxXP: 2500,    emoji: '🎯', color: '#a855f7' },
+      { level: 5,  name: 'Estudante Avançado',        minXP: 2500,    maxXP: 3600,    emoji: '🚀', color: '#9333ea' },
+      { level: 6,  name: 'Leitor Assíduo',            minXP: 3600,    maxXP: 5000,    emoji: '📕', color: '#7c3aed' },
+      { level: 7,  name: 'Mente Afiada',              minXP: 5000,    maxXP: 6700,    emoji: '🧠', color: '#8b5cf6' },
+      { level: 8,  name: 'Explorador do Saber',       minXP: 6700,    maxXP: 8700,    emoji: '🔭', color: '#a855f7' },
+
+      // Fase 2: Construindo Base (9–16) — dias 31–80
+      { level: 9,  name: 'Especialista em Formação', minXP: 8700,    maxXP: 11000,   emoji: '🔬', color: '#0ea5e9' },
+      { level: 10, name: 'Analista Determinado',      minXP: 11000,   maxXP: 13600,   emoji: '📊', color: '#0284c7' },
+      { level: 11, name: 'Pesquisador Focado',        minXP: 13600,   maxXP: 16500,   emoji: '🔍', color: '#0369a1' },
+      { level: 12, name: 'Estudioso Persistente',     minXP: 16500,   maxXP: 19800,   emoji: '📐', color: '#075985' },
+      { level: 13, name: 'Técnico do Conhecimento',   minXP: 19800,   maxXP: 23400,   emoji: '⚙️', color: '#0c4a6e' },
+      { level: 14, name: 'Mestre em Treinamento',     minXP: 23400,   maxXP: 27400,   emoji: '🎓', color: '#22c55e' },
+      { level: 15, name: 'Estrategista Acadêmico',    minXP: 27400,   maxXP: 31800,   emoji: '♟️', color: '#16a34a' },
+      { level: 16, name: 'Sábio Aprendiz',            minXP: 31800,   maxXP: 36600,   emoji: '🦉', color: '#15803d' },
+
+      // Fase 3: Crescendo (17–24) — dias 81–130
+      { level: 17, name: 'Acadêmico Avançado',        minXP: 36600,   maxXP: 41800,   emoji: '🏫', color: '#f59e0b' },
+      { level: 18, name: 'Mente Brilhante',           minXP: 41800,   maxXP: 47400,   emoji: '💡', color: '#d97706' },
+      { level: 19, name: 'Guardião do Conhecimento',  minXP: 47400,   maxXP: 53400,   emoji: '🛡️', color: '#b45309' },
+      { level: 20, name: 'Mestre do Conhecimento',    minXP: 53400,   maxXP: 59800,   emoji: '🎖️', color: '#92400e' },
+      { level: 21, name: 'Líder Intelectual',         minXP: 59800,   maxXP: 66600,   emoji: '👨‍🏫', color: '#f97316' },
+      { level: 22, name: 'Arquiteto do Saber',        minXP: 66600,   maxXP: 73800,   emoji: '🏛️', color: '#ea580c' },
+      { level: 23, name: 'Veterano Acadêmico',        minXP: 73800,   maxXP: 81400,   emoji: '🎗️', color: '#c2410c' },
+      { level: 24, name: 'Professor em Ascensão',     minXP: 81400,   maxXP: 89400,   emoji: '📜', color: '#9a3412' },
+
+      // Fase 4: Elite (25–32) — dias 131–175
+      { level: 25, name: 'Elite Acadêmica',           minXP: 89400,   maxXP: 98200,   emoji: '⭐', color: '#ec4899' },
+      { level: 26, name: 'Campeão dos Estudos',       minXP: 98200,   maxXP: 107400,  emoji: '🏅', color: '#db2777' },
+      { level: 27, name: 'Guru dos Estudos',          minXP: 107400,  maxXP: 117000,  emoji: '🧘', color: '#be185d' },
+      { level: 28, name: 'Sábio Iluminado',           minXP: 117000,  maxXP: 127000,  emoji: '🌙', color: '#9d174d' },
+      { level: 29, name: 'Mestre Supremo',            minXP: 127000,  maxXP: 137400,  emoji: '💎', color: '#831843' },
+      { level: 30, name: 'Lenda Acadêmica',           minXP: 137400,  maxXP: 148200,  emoji: '🏆', color: '#f59e0b' },
+      { level: 31, name: 'Campeão Invicto',           minXP: 148200,  maxXP: 159400,  emoji: '🥇', color: '#eab308' },
+      { level: 32, name: 'Portador da Sabedoria',     minXP: 159400,  maxXP: 171000,  emoji: '📿', color: '#ca8a04' },
+
+      // Fase 5: Lenda (33–40) — dias 176–215
+      { level: 33, name: 'Titã da Sabedoria',         minXP: 171000,  maxXP: 183000,  emoji: '⚡', color: '#ef4444' },
+      { level: 34, name: 'Imortal Acadêmico',         minXP: 183000,  maxXP: 195400,  emoji: '🌟', color: '#dc2626' },
+      { level: 35, name: 'Senhor do Conhecimento',    minXP: 195400,  maxXP: 208200,  emoji: '👁️', color: '#b91c1c' },
+      { level: 36, name: 'Fenômeno Acadêmico',        minXP: 208200,  maxXP: 221400,  emoji: '🌀', color: '#991b1b' },
+      { level: 37, name: 'Iluminado pelos Livros',    minXP: 221400,  maxXP: 235000,  emoji: '✨', color: '#7f1d1d' },
+      { level: 38, name: 'Deus do Conhecimento',      minXP: 235000,  maxXP: 249000,  emoji: '🔱', color: '#d946ef' },
+      { level: 39, name: 'Transcendente',             minXP: 249000,  maxXP: 263400,  emoji: '🌌', color: '#c026d3' },
+      { level: 40, name: 'Ascendido',                 minXP: 263400,  maxXP: 278200,  emoji: '🦋', color: '#a21caf' },
+
+      // Fase 6: Supremo — Reta Final (41–50) — dias 216–246
+      { level: 41, name: 'Supremo Acadêmico',         minXP: 278200,  maxXP: 293400,  emoji: '🌠', color: '#8b5cf6' },
+      { level: 42, name: 'Conquistador Supremo',      minXP: 293400,  maxXP: 309000,  emoji: '🗡️', color: '#7c3aed' },
+      { level: 43, name: 'Entidade do Saber',         minXP: 309000,  maxXP: 325000,  emoji: '⚗️', color: '#6d28d9' },
+      { level: 44, name: 'Oráculo Vivo',              minXP: 325000,  maxXP: 341400,  emoji: '🔮', color: '#5b21b6' },
+      { level: 45, name: 'Guardião da Sabedoria',     minXP: 341400,  maxXP: 358200,  emoji: '🛡️', color: '#4c1d95' },
+      { level: 46, name: 'Arquivar de Conhecimento',  minXP: 358200,  maxXP: 375400,  emoji: '📦', color: '#ec4899' },
+      { level: 47, name: 'Mito Acadêmico',            minXP: 375400,  maxXP: 393000,  emoji: '🧬', color: '#be185d' },
+      { level: 48, name: 'Fenômeno Imortal',          minXP: 393000,  maxXP: 411000,  emoji: '💫', color: '#9d174d' },
+      { level: 49, name: 'Semideus dos Estudos',      minXP: 411000,  maxXP: 429400,  emoji: '⚜️', color: '#f59e0b' },
+      { level: 50, name: '🎓 APROVADO — PROVA 2026',   minXP: 429400,  maxXP: Infinity, emoji: '👑', color: '#eab308' }
     ];
     
     // ============================================
@@ -2648,6 +2690,300 @@
         category: 'final',
         condition: (stats) => stats.totalBadges >= 30,
         xpReward: 5000
+      },
+
+      // ============================================
+      // +60 BADGES NOVOS
+      // ============================================
+
+      // MARCOS AVANÇADOS
+      trezentas_sessoes: {
+        id: 'trezentas_sessoes', name: 'Incrível', description: 'Complete 300 sessões de estudo',
+        emoji: '🌟', rarity: 'platina', category: 'marcos',
+        condition: (s) => s.totalSessions >= 300, xpReward: 1500
+      },
+      quinhentas_sessoes: {
+        id: 'quinhentas_sessoes', name: 'Lenda das Sessões', description: 'Complete 500 sessões',
+        emoji: '🦅', rarity: 'especial', category: 'marcos',
+        condition: (s) => s.totalSessions >= 500, xpReward: 3000
+      },
+      mil_sessoes: {
+        id: 'mil_sessoes', name: 'Milênio de Estudos', description: 'Complete 1000 sessões',
+        emoji: '🌌', rarity: 'especial', category: 'marcos',
+        condition: (s) => s.totalSessions >= 1000, xpReward: 10000
+      },
+      cinco_sessoes: {
+        id: 'cinco_sessoes', name: 'Aquecendo Motores', description: 'Complete 5 sessões de estudo',
+        emoji: '🔰', rarity: 'bronze', category: 'marcos',
+        condition: (s) => s.totalSessions >= 5, xpReward: 75
+      },
+      vinte_cinco_sessoes: {
+        id: 'vinte_cinco_sessoes', name: 'Quarto de Cem', description: 'Complete 25 sessões',
+        emoji: '🎯', rarity: 'bronze', category: 'marcos',
+        condition: (s) => s.totalSessions >= 25, xpReward: 150
+      },
+
+      // TEMPO DE ESTUDO AVANÇADO
+      quatrocentas_horas: {
+        id: 'quatrocentas_horas', name: 'Quarteto de Centenas', description: 'Estude 400 horas no total',
+        emoji: '🏔️', rarity: 'platina', category: 'tempo',
+        condition: (s) => s.totalMinutes >= 24000, xpReward: 2000
+      },
+      quinhentas_horas: {
+        id: 'quinhentas_horas', name: 'Meio Milênio de Horas', description: 'Estude 500 horas no total',
+        emoji: '🚀', rarity: 'especial', category: 'tempo',
+        condition: (s) => s.totalMinutes >= 30000, xpReward: 4000
+      },
+      vinte_horas: {
+        id: 'vinte_horas', name: 'Primeiro Marco', description: 'Estude 20 horas no total',
+        emoji: '🌤️', rarity: 'bronze', category: 'tempo',
+        condition: (s) => s.totalMinutes >= 1200, xpReward: 100
+      },
+      cinquenta_horas: {
+        id: 'cinquenta_horas', name: 'Meio Centenário', description: 'Estude 50 horas no total',
+        emoji: '⚡', rarity: 'prata', category: 'tempo',
+        condition: (s) => s.totalMinutes >= 3000, xpReward: 300
+      },
+      cento_cinquenta_horas: {
+        id: 'cento_cinquenta_horas', name: 'Ferreiro do Tempo', description: 'Estude 150 horas no total',
+        emoji: '⚒️', rarity: 'ouro', category: 'tempo',
+        condition: (s) => s.totalMinutes >= 9000, xpReward: 700
+      },
+      sessao_longa: {
+        id: 'sessao_longa', name: 'Ultra Foco', description: 'Complete uma sessão de 4+ horas',
+        emoji: '🧠', rarity: 'ouro', category: 'tempo',
+        condition: (s) => s.longestSession >= 240, xpReward: 400
+      },
+      sessao_gigante: {
+        id: 'sessao_gigante', name: 'Maratona Total', description: 'Complete uma sessão de 6+ horas',
+        emoji: '🌊', rarity: 'platina', category: 'tempo',
+        condition: (s) => s.longestSession >= 360, xpReward: 800
+      },
+
+      // STREAK AVANÇADO
+      streak_mes: {
+        id: 'streak_mes', name: 'Mês Completo', description: 'Mantenha 30 dias de streak',
+        emoji: '📅', rarity: 'platina', category: 'streak',
+        condition: (s) => s.streak >= 30, xpReward: 1200
+      },
+      streak_dois_meses: {
+        id: 'streak_dois_meses', name: 'Bimestre Perfeito', description: 'Mantenha 60 dias de streak',
+        emoji: '🔥', rarity: 'especial', category: 'streak',
+        condition: (s) => s.streak >= 60, xpReward: 2500
+      },
+      streak_cem: {
+        id: 'streak_cem', name: 'Centenário de Fogo', description: 'Mantenha 100 dias de streak',
+        emoji: '🌋', rarity: 'especial', category: 'streak',
+        condition: (s) => s.streak >= 100, xpReward: 5000
+      },
+      streak_dois: {
+        id: 'streak_dois', name: 'Faísca', description: 'Mantenha 2 dias de streak',
+        emoji: '✨', rarity: 'bronze', category: 'streak',
+        condition: (s) => s.streak >= 2, xpReward: 30
+      },
+      streak_cinco: {
+        id: 'streak_cinco', name: 'Cinco em Cinco', description: 'Mantenha 5 dias de streak',
+        emoji: '🌡️', rarity: 'bronze', category: 'streak',
+        condition: (s) => s.streak >= 5, xpReward: 80
+      },
+      streak_dez: {
+        id: 'streak_dez', name: 'Dez Dias de Foco', description: 'Mantenha 10 dias de streak',
+        emoji: '💥', rarity: 'prata', category: 'streak',
+        condition: (s) => s.streak >= 10, xpReward: 200
+      },
+
+      // PERFORMANCE AVANÇADA
+      cem_questoes: {
+        id: 'cem_questoes', name: 'Caçador de Questões', description: 'Resolva 100 questões no total',
+        emoji: '🎪', rarity: 'bronze', category: 'performance',
+        condition: (s) => s.totalQuestions >= 100, xpReward: 150
+      },
+      quinhentas_questoes: {
+        id: 'quinhentas_questoes', name: 'Meio Milhar', description: 'Resolva 500 questões no total',
+        emoji: '📊', rarity: 'prata', category: 'performance',
+        condition: (s) => s.totalQuestions >= 500, xpReward: 400
+      },
+      mil_questoes: {
+        id: 'mil_questoes', name: 'Milhar de Questões', description: 'Resolva 1000 questões no total',
+        emoji: '💎', rarity: 'ouro', category: 'performance',
+        condition: (s) => s.totalQuestions >= 1000, xpReward: 800
+      },
+      cinco_mil_questoes: {
+        id: 'cinco_mil_questoes', name: 'Banco de Questões Vivo', description: 'Resolva 5000 questões',
+        emoji: '🧬', rarity: 'platina', category: 'performance',
+        condition: (s) => s.totalQuestions >= 5000, xpReward: 3000
+      },
+      acerto_noventa: {
+        id: 'acerto_noventa', name: 'Quase Perfeito', description: 'Tenha 90%+ de acerto numa sessão',
+        emoji: '🎖️', rarity: 'ouro', category: 'performance',
+        condition: (s) => s.bestAccuracy >= 90, xpReward: 500
+      },
+      acerto_cem: {
+        id: 'acerto_cem', name: 'Gabarito Total', description: 'Acerte 100% numa sessão',
+        emoji: '💯', rarity: 'platina', category: 'performance',
+        condition: (s) => s.bestAccuracy >= 100, xpReward: 1000
+      },
+      acerto_setenta: {
+        id: 'acerto_setenta', name: 'Acima da Média', description: 'Tenha 70%+ de acerto numa sessão',
+        emoji: '📈', rarity: 'prata', category: 'performance',
+        condition: (s) => s.bestAccuracy >= 70, xpReward: 200
+      },
+
+      // MATÉRIAS
+      cinco_materias: {
+        id: 'cinco_materias', name: 'Multidisciplinar', description: 'Estude 5 matérias diferentes',
+        emoji: '🗂️', rarity: 'prata', category: 'materias',
+        condition: (s) => s.uniqueSubjects >= 5, xpReward: 200
+      },
+      dez_materias: {
+        id: 'dez_materias', name: 'Generalista', description: 'Estude 10 matérias diferentes',
+        emoji: '📚', rarity: 'ouro', category: 'materias',
+        condition: (s) => s.uniqueSubjects >= 10, xpReward: 500
+      },
+      quinze_materias: {
+        id: 'quinze_materias', name: 'Enciclopédia Viva', description: 'Estude 15 matérias diferentes',
+        emoji: '🌍', rarity: 'platina', category: 'materias',
+        condition: (s) => s.uniqueSubjects >= 15, xpReward: 1000
+      },
+      tres_materias: {
+        id: 'tres_materias', name: 'Triatleta do Saber', description: 'Estude 3 matérias diferentes',
+        emoji: '🎭', rarity: 'bronze', category: 'materias',
+        condition: (s) => s.uniqueSubjects >= 3, xpReward: 100
+      },
+
+      // DIFICULDADE
+      dez_faceis: {
+        id: 'dez_faceis', name: 'Aquecimento Completo', description: 'Complete 10 sessões fáceis',
+        emoji: '🌱', rarity: 'bronze', category: 'dificuldade',
+        condition: (s) => s.easySessions >= 10, xpReward: 80
+      },
+      cinquenta_faceis: {
+        id: 'cinquenta_faceis', name: 'Base Sólida', description: 'Complete 50 sessões fáceis',
+        emoji: '🏗️', rarity: 'prata', category: 'dificuldade',
+        condition: (s) => s.easySessions >= 50, xpReward: 250
+      },
+      vinte_medios: {
+        id: 'vinte_medios', name: 'Zona de Conforto Superada', description: 'Complete 20 sessões médias',
+        emoji: '⚖️', rarity: 'prata', category: 'dificuldade',
+        condition: (s) => s.mediumSessions >= 20, xpReward: 200
+      },
+      cem_medios: {
+        id: 'cem_medios', name: 'Equilibrista', description: 'Complete 100 sessões médias',
+        emoji: '🎪', rarity: 'ouro', category: 'dificuldade',
+        condition: (s) => s.mediumSessions >= 100, xpReward: 600
+      },
+      dez_dificeis: {
+        id: 'dez_dificeis', name: 'Guerreiro Iniciante', description: 'Complete 10 sessões difíceis',
+        emoji: '🛡️', rarity: 'prata', category: 'dificuldade',
+        condition: (s) => s.hardSessions >= 10, xpReward: 300
+      },
+      cinquenta_dificeis: {
+        id: 'cinquenta_dificeis', name: 'Veterano da Batalha', description: 'Complete 50 sessões difíceis',
+        emoji: '⚔️', rarity: 'ouro', category: 'dificuldade',
+        condition: (s) => s.hardSessions >= 50, xpReward: 800
+      },
+      cem_dificeis: {
+        id: 'cem_dificeis', name: 'Invencível', description: 'Complete 100 sessões difíceis',
+        emoji: '🗡️', rarity: 'platina', category: 'dificuldade',
+        condition: (s) => s.hardSessions >= 100, xpReward: 2000
+      },
+
+      // CONSISTÊNCIA
+      trinta_sessoes_mes: {
+        id: 'trinta_sessoes_mes', name: 'Mês Produtivo', description: 'Faça 30 sessões de estudo',
+        emoji: '📆', rarity: 'prata', category: 'consistencia',
+        condition: (s) => s.totalSessions >= 30, xpReward: 200
+      },
+      sessoes_flash: {
+        id: 'sessoes_flash', name: 'Micro-estudante', description: 'Faça 10 sessões de 15-25 min',
+        emoji: '⚡', rarity: 'bronze', category: 'consistencia',
+        condition: (s) => s.shortSessions >= 10, xpReward: 100
+      },
+      sessoes_flash_50: {
+        id: 'sessoes_flash_50', name: 'Flash Master', description: 'Faça 50 sessões de 15-25 min',
+        emoji: '🌪️', rarity: 'prata', category: 'consistencia',
+        condition: (s) => s.shortSessions >= 50, xpReward: 350
+      },
+      sessoes_flash_100: {
+        id: 'sessoes_flash_100', name: 'Velocista do Saber', description: 'Faça 100 sessões de 15-25 min',
+        emoji: '🏎️', rarity: 'ouro', category: 'consistencia',
+        condition: (s) => s.shortSessions >= 100, xpReward: 700
+      },
+      duzentas_horas_consistencia: {
+        id: 'duzentas_horas_consistencia', name: 'Duzentas Horas', description: 'Estude 200 horas no total',
+        emoji: '🌠', rarity: 'ouro', category: 'consistencia',
+        condition: (s) => s.totalMinutes >= 12000, xpReward: 1000
+      },
+
+      // ESPECIAIS
+      primeira_badge: {
+        id: 'primeira_badge', name: 'Colecionador Iniciante', description: 'Desbloqueie sua primeira badge',
+        emoji: '🎁', rarity: 'bronze', category: 'especial',
+        condition: (s) => s.totalBadges >= 1, xpReward: 50
+      },
+      cinco_badges: {
+        id: 'cinco_badges', name: 'Coleção Crescendo', description: 'Desbloqueie 5 badges',
+        emoji: '🎀', rarity: 'bronze', category: 'especial',
+        condition: (s) => s.totalBadges >= 5, xpReward: 100
+      },
+      dez_badges: {
+        id: 'dez_badges', name: 'Museu Pessoal', description: 'Desbloqueie 10 badges',
+        emoji: '🏛️', rarity: 'prata', category: 'especial',
+        condition: (s) => s.totalBadges >= 10, xpReward: 200
+      },
+      vinte_badges: {
+        id: 'vinte_badges', name: 'Galeria de Conquistas', description: 'Desbloqueie 20 badges',
+        emoji: '🖼️', rarity: 'ouro', category: 'especial',
+        condition: (s) => s.totalBadges >= 20, xpReward: 500
+      },
+      quarenta_badges: {
+        id: 'quarenta_badges', name: 'Tesouro de Medalhas', description: 'Desbloqueie 40 badges',
+        emoji: '💰', rarity: 'platina', category: 'especial',
+        condition: (s) => s.totalBadges >= 40, xpReward: 1500
+      },
+      sessenta_badges: {
+        id: 'sessenta_badges', name: 'Lenda das Conquistas', description: 'Desbloqueie 60 badges',
+        emoji: '🌟', rarity: 'especial', category: 'especial',
+        condition: (s) => s.totalBadges >= 60, xpReward: 5000
+      },
+
+      // DUO / CASAL
+      cinco_dias_casal: {
+        id: 'cinco_dias_casal', name: 'Semana do Casal', description: 'Ambos estudam por 5 dias seguidos',
+        emoji: '💑', rarity: 'prata', category: 'duo',
+        condition: (s) => s.bothStudiedSameDay && s.streak >= 5, xpReward: 300
+      },
+      tres_duelos: {
+        id: 'tres_duelos', name: 'Gladiador do Casal', description: 'Vença 3 duelos semanais',
+        emoji: '🥊', rarity: 'ouro', category: 'duo',
+        condition: (s) => s.duelsWon >= 3, xpReward: 600
+      },
+      dez_duelos: {
+        id: 'dez_duelos', name: 'Campeão Invicto', description: 'Vença 10 duelos semanais',
+        emoji: '🏆', rarity: 'platina', category: 'duo',
+        condition: (s) => s.duelsWon >= 10, xpReward: 2000
+      },
+      parceiro_online: {
+        id: 'parceiro_online', name: 'Estudando Junto', description: 'Seu parceiro está online enquanto você estuda',
+        emoji: '🤝', rarity: 'bronze', category: 'duo',
+        condition: (s) => s.bothStudiedSameDay, xpReward: 100
+      },
+
+      // FINAL / CONQUISTAS SUPREMAS
+      oitocentas_horas: {
+        id: 'oitocentas_horas', name: 'Mestre do Tempo', description: 'Estude 800 horas no total',
+        emoji: '⏳', rarity: 'especial', category: 'final',
+        condition: (s) => s.totalMinutes >= 48000, xpReward: 8000
+      },
+      mil_horas: {
+        id: 'mil_horas', name: 'Mil Horas de Glória', description: 'Estude 1000 horas no total',
+        emoji: '🌅', rarity: 'especial', category: 'final',
+        condition: (s) => s.totalMinutes >= 60000, xpReward: 15000
+      },
+      aprovado: {
+        id: 'aprovado', name: '🎓 APROVADO!', description: 'Chegou ao fim da jornada — parabéns pela dedicação!',
+        emoji: '🎓', rarity: 'especial', category: 'final',
+        condition: (s) => s.totalMinutes >= 6000 && s.totalSessions >= 200, xpReward: 99999
       }
     };
 
@@ -2705,6 +3041,218 @@
         category: 'semanal',
         xpReward: 600,
         icon: '🏆'
+      },
+
+      // ============================================
+      // +50 BADGES SEMANAIS NOVOS
+      // ============================================
+
+      // HORAS
+      semana_5h: {
+        id: 'semana_5h', name: 'Semana Produtiva', description: 'Estudou 5+ horas nesta semana',
+        emoji: '🌤️', rarity: 'bronze', category: 'semanal', xpReward: 150, icon: '⏱️'
+      },
+      semana_10h: {
+        id: 'semana_10h', name: 'Semana Intensa', description: 'Estudou 10+ horas nesta semana',
+        emoji: '🔥', rarity: 'prata', category: 'semanal', xpReward: 300, icon: '⏱️'
+      },
+      semana_20h: {
+        id: 'semana_20h', name: 'Semana Monstruosa', description: 'Estudou 20+ horas nesta semana',
+        emoji: '💪', rarity: 'ouro', category: 'semanal', xpReward: 600, icon: '⏱️'
+      },
+      semana_30h: {
+        id: 'semana_30h', name: 'Semana Épica', description: 'Estudou 30+ horas nesta semana',
+        emoji: '🌋', rarity: 'platina', category: 'semanal', xpReward: 1200, icon: '⏱️'
+      },
+      semana_40h: {
+        id: 'semana_40h', name: 'Semana Lendária', description: 'Estudou 40+ horas nesta semana',
+        emoji: '🚀', rarity: 'especial', category: 'semanal', xpReward: 2000, icon: '⏱️'
+      },
+
+      // SESSÕES
+      semana_3_sessoes: {
+        id: 'semana_3_sessoes', name: 'Trio da Semana', description: 'Completou 3+ sessões nesta semana',
+        emoji: '📗', rarity: 'bronze', category: 'semanal', xpReward: 100, icon: '📚'
+      },
+      semana_7_sessoes: {
+        id: 'semana_7_sessoes', name: 'Uma por Dia', description: 'Completou 7+ sessões nesta semana',
+        emoji: '📘', rarity: 'prata', category: 'semanal', xpReward: 250, icon: '📚'
+      },
+      semana_10_sessoes: {
+        id: 'semana_10_sessoes', name: 'Dezena Semanal', description: 'Completou 10+ sessões nesta semana',
+        emoji: '📙', rarity: 'ouro', category: 'semanal', xpReward: 500, icon: '📚'
+      },
+      semana_15_sessoes: {
+        id: 'semana_15_sessoes', name: 'Quinzena Dedicada', description: 'Completou 15+ sessões nesta semana',
+        emoji: '📕', rarity: 'platina', category: 'semanal', xpReward: 900, icon: '📚'
+      },
+      semana_20_sessoes: {
+        id: 'semana_20_sessoes', name: 'Vinte Vezes Focado', description: 'Completou 20+ sessões nesta semana',
+        emoji: '🏅', rarity: 'especial', category: 'semanal', xpReward: 1500, icon: '📚'
+      },
+
+      // QUESTÕES
+      semana_50_questoes: {
+        id: 'semana_50_questoes', name: 'Caça Questões', description: 'Resolveu 50+ questões nesta semana',
+        emoji: '🎯', rarity: 'bronze', category: 'semanal', xpReward: 120, icon: '📝'
+      },
+      semana_100_questoes: {
+        id: 'semana_100_questoes', name: 'Centena Semanal', description: 'Resolveu 100+ questões nesta semana',
+        emoji: '💯', rarity: 'prata', category: 'semanal', xpReward: 300, icon: '📝'
+      },
+      semana_200_questoes: {
+        id: 'semana_200_questoes', name: 'Duzentas na Semana', description: 'Resolveu 200+ questões nesta semana',
+        emoji: '🧠', rarity: 'ouro', category: 'semanal', xpReward: 600, icon: '📝'
+      },
+      semana_500_questoes: {
+        id: 'semana_500_questoes', name: 'Fábrica de Respostas', description: 'Resolveu 500+ questões nesta semana',
+        emoji: '⚙️', rarity: 'platina', category: 'semanal', xpReward: 1500, icon: '📝'
+      },
+      semana_1000_questoes: {
+        id: 'semana_1000_questoes', name: 'Milhar Semanal', description: 'Resolveu 1000+ questões nesta semana',
+        emoji: '🌌', rarity: 'especial', category: 'semanal', xpReward: 3000, icon: '📝'
+      },
+
+      // ACERTO
+      semana_acerto_60: {
+        id: 'semana_acerto_60', name: 'Aprovado na Semana', description: 'Média de 60%+ de acerto nesta semana',
+        emoji: '✅', rarity: 'bronze', category: 'semanal', xpReward: 150, icon: '🎯'
+      },
+      semana_acerto_75: {
+        id: 'semana_acerto_75', name: 'Atirador Certeiro', description: 'Média de 75%+ de acerto nesta semana',
+        emoji: '🏹', rarity: 'prata', category: 'semanal', xpReward: 350, icon: '🎯'
+      },
+      semana_acerto_85: {
+        id: 'semana_acerto_85', name: 'Precisão de Elite', description: 'Média de 85%+ de acerto nesta semana',
+        emoji: '🎖️', rarity: 'ouro', category: 'semanal', xpReward: 700, icon: '🎯'
+      },
+      semana_acerto_95: {
+        id: 'semana_acerto_95', name: 'Quase Infalível', description: 'Média de 95%+ de acerto nesta semana',
+        emoji: '💎', rarity: 'platina', category: 'semanal', xpReward: 1400, icon: '🎯'
+      },
+      semana_acerto_100: {
+        id: 'semana_acerto_100', name: 'Semana Perfeita', description: 'Média de 100% de acerto nesta semana',
+        emoji: '🌟', rarity: 'especial', category: 'semanal', xpReward: 2500, icon: '🎯'
+      },
+
+      // DIFICULDADE
+      semana_dificil_5: {
+        id: 'semana_dificil_5', name: 'Corajoso da Semana', description: 'Completou 5+ sessões difíceis nesta semana',
+        emoji: '🗡️', rarity: 'prata', category: 'semanal', xpReward: 250, icon: '💪'
+      },
+      semana_dificil_10: {
+        id: 'semana_dificil_10', name: 'Guerreiro Semanal', description: 'Completou 10+ sessões difíceis nesta semana',
+        emoji: '⚔️', rarity: 'ouro', category: 'semanal', xpReward: 600, icon: '💪'
+      },
+      semana_dificil_20: {
+        id: 'semana_dificil_20', name: 'Berserk da Semana', description: 'Completou 20+ sessões difíceis nesta semana',
+        emoji: '🔱', rarity: 'platina', category: 'semanal', xpReward: 1200, icon: '💪'
+      },
+      semana_facil_10: {
+        id: 'semana_facil_10', name: 'Aquecimento Semanal', description: 'Completou 10 sessões fáceis nesta semana',
+        emoji: '🌿', rarity: 'bronze', category: 'semanal', xpReward: 100, icon: '💪'
+      },
+      semana_variado: {
+        id: 'semana_variado', name: 'Eclético da Semana', description: 'Sessões de todas as dificuldades nesta semana',
+        emoji: '🎨', rarity: 'prata', category: 'semanal', xpReward: 300, icon: '💪'
+      },
+
+      // MATÉRIAS
+      semana_2_materias: {
+        id: 'semana_2_materias', name: 'Dupla da Semana', description: 'Estudou 2+ matérias diferentes nesta semana',
+        emoji: '📂', rarity: 'bronze', category: 'semanal', xpReward: 100, icon: '📚'
+      },
+      semana_3_materias: {
+        id: 'semana_3_materias', name: 'Tripla da Semana', description: 'Estudou 3+ matérias diferentes nesta semana',
+        emoji: '🗂️', rarity: 'prata', category: 'semanal', xpReward: 250, icon: '📚'
+      },
+      semana_5_materias: {
+        id: 'semana_5_materias', name: 'Multidisciplinar da Semana', description: 'Estudou 5+ matérias nesta semana',
+        emoji: '🌍', rarity: 'ouro', category: 'semanal', xpReward: 500, icon: '📚'
+      },
+
+      // REGULARIDADE SEMANAL
+      semana_todo_dia: {
+        id: 'semana_todo_dia', name: 'Sem Faltas', description: 'Estudou todos os 7 dias da semana',
+        emoji: '🗓️', rarity: 'ouro', category: 'semanal', xpReward: 700, icon: '📅'
+      },
+      semana_5_dias: {
+        id: 'semana_5_dias', name: 'Dia de Folga Merecido', description: 'Estudou 5+ dias da semana',
+        emoji: '📆', rarity: 'prata', category: 'semanal', xpReward: 300, icon: '📅'
+      },
+      semana_inicio_forte: {
+        id: 'semana_inicio_forte', name: 'Segunda-Feira Poderosa', description: 'Estudou na segunda-feira',
+        emoji: '💫', rarity: 'bronze', category: 'semanal', xpReward: 80, icon: '📅'
+      },
+      semana_fim_forte: {
+        id: 'semana_fim_forte', name: 'Fim de Semana Produtivo', description: 'Estudou no sábado E no domingo',
+        emoji: '🏖️', rarity: 'prata', category: 'semanal', xpReward: 250, icon: '📅'
+      },
+
+      // CONQUISTAS ESPECIAIS SEMANAIS
+      semana_mais_pontos_ever: {
+        id: 'semana_mais_pontos_ever', name: 'Recorde Pessoal', description: 'Sua melhor semana de pontuação',
+        emoji: '📈', rarity: 'platina', category: 'semanal', xpReward: 1000, icon: '🏆'
+      },
+      semana_sessao_longa: {
+        id: 'semana_sessao_longa', name: 'Maratonista Semanal', description: 'Fez uma sessão de 3+ horas nesta semana',
+        emoji: '🏃', rarity: 'ouro', category: 'semanal', xpReward: 500, icon: '⏱️'
+      },
+      semana_100_certas: {
+        id: 'semana_100_certas', name: 'Centenário de Acertos', description: '100+ respostas certas nesta semana',
+        emoji: '🎊', rarity: 'prata', category: 'semanal', xpReward: 400, icon: '🎯'
+      },
+      semana_zero_faltas: {
+        id: 'semana_zero_faltas', name: 'Incansável', description: 'Estudou todos os dias sem exceção',
+        emoji: '🛡️', rarity: 'ouro', category: 'semanal', xpReward: 800, icon: '📅'
+      },
+      semana_mais_rapido: {
+        id: 'semana_mais_rapido', name: 'Velocista da Semana', description: 'Mais sessões em menos tempo',
+        emoji: '⚡', rarity: 'prata', category: 'semanal', xpReward: 300, icon: '⏱️'
+      },
+
+      // DUELO / CASAL
+      semana_virada: {
+        id: 'semana_virada', name: 'A Grande Virada', description: 'Estava perdendo e virou o jogo na semana',
+        emoji: '🔄', rarity: 'platina', category: 'semanal', xpReward: 900, icon: '⚔️'
+      },
+      semana_dominio: {
+        id: 'semana_dominio', name: 'Domínio Total', description: 'Venceu em todas as categorias da semana',
+        emoji: '👑', rarity: 'especial', category: 'semanal', xpReward: 2000, icon: '🏆'
+      },
+      semana_par: {
+        id: 'semana_par', name: 'Empate Honroso', description: 'Semana terminou empatada — respeito!',
+        emoji: '🤝', rarity: 'prata', category: 'semanal', xpReward: 200, icon: '💕'
+      },
+      semana_ambos_10h: {
+        id: 'semana_ambos_10h', name: 'Casal Dedicado', description: 'Ambos estudaram 10h+ nesta semana',
+        emoji: '💑', rarity: 'ouro', category: 'semanal', xpReward: 600, icon: '💕'
+      },
+      semana_ambos_20h: {
+        id: 'semana_ambos_20h', name: 'Super Casal', description: 'Ambos estudaram 20h+ nesta semana',
+        emoji: '💞', rarity: 'platina', category: 'semanal', xpReward: 1500, icon: '💕'
+      },
+
+      // TEMÁTICAS
+      semana_noturna: {
+        id: 'semana_noturna', name: 'Coruja da Semana', description: 'Estudou de madrugada esta semana',
+        emoji: '🦉', rarity: 'prata', category: 'semanal', xpReward: 250, icon: '🌙'
+      },
+      semana_madrugadora: {
+        id: 'semana_madrugadora', name: 'Passarinho da Manhã', description: 'Estudou antes das 7h esta semana',
+        emoji: '🌅', rarity: 'prata', category: 'semanal', xpReward: 250, icon: '☀️'
+      },
+      semana_foco_total: {
+        id: 'semana_foco_total', name: 'Foco Total', description: 'Mais de 2h em uma única sessão nesta semana',
+        emoji: '🧘', rarity: 'prata', category: 'semanal', xpReward: 300, icon: '⏱️'
+      },
+      semana_micro_mestre: {
+        id: 'semana_micro_mestre', name: 'Micro Mestre', description: '5+ sessões curtas (15-25min) nesta semana',
+        emoji: '⚡', rarity: 'bronze', category: 'semanal', xpReward: 150, icon: '📚'
+      },
+      semana_diversificada: {
+        id: 'semana_diversificada', name: 'Semana Diversificada', description: 'Sessões fáceis, médias e difíceis na mesma semana',
+        emoji: '🌈', rarity: 'ouro', category: 'semanal', xpReward: 450, icon: '💪'
       }
     };
     
@@ -2885,6 +3433,9 @@
         profile: 'OAB · Direito', 
         partner: 'kelinha', 
         exam: 'oab',
+        examLabel: 'OAB XLI',
+        examDate: EXAM_DATE_OAB,
+        examDateStr: '11/10/2026',
         themeColor: '#8b5cf6'
       },
       kelinha: { 
@@ -2895,6 +3446,9 @@
         profile: 'ENEM · Ensino Médio', 
         partner: 'mana', 
         exam: 'enem',
+        examLabel: 'ENEM 2026',
+        examDate: EXAM_DATE_ENEM,
+        examDateStr: '09/11/2026',
         themeColor: '#ec4899'
       }
     };
@@ -2930,11 +3484,12 @@
     
     const generateId = () => Date.now().toString(36) + Math.random().toString(36).substr(2);
     
-    // Calcular dias até a prova
-    const getDaysUntilExam = () => {
+    // Calcular dias até a prova (por usuário ou global)
+    const getDaysUntilExam = (userId) => {
       const now = new Date();
-      const diff = EXAM_DATE - now;
-      return Math.ceil(diff / (1000 * 60 * 60 * 24));
+      const date = userId && USERS[userId] ? USERS[userId].examDate : EXAM_DATE;
+      const diff = date - now;
+      return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
     };
     
     // ============================================
@@ -3596,7 +4151,7 @@
         ),
 
         // Tabs
-        React.createElement('div', { className: 'filter-bar', style: { position: 'relative', marginBottom: '20px' } },
+        React.createElement('div', { className: 'filter-bar' },
           React.createElement('button', {
             className: `filter-btn ${activeTab === 'permanentes' ? 'active' : ''}`,
             onClick: () => setActiveTab('permanentes')
@@ -3730,6 +4285,7 @@
     // ============================================
     const LevelScreen = ({ userId, xp, addToast }) => {
       const user = USERS[userId];
+      const daysUntilExam = getDaysUntilExam(userId);
       const [animPct, setAnimPct] = React.useState(0);
       const [showXP, setShowXP] = React.useState(0);
 
@@ -3740,6 +4296,11 @@
       const nextLevel = useMemo(() => {
         return LEVELS.find(l => l.level === currentLevel.level + 1);
       }, [currentLevel]);
+
+      // Personaliza nome do nível 50 por usuário
+      const levelName = currentLevel.level === 50
+        ? `🎓 APROVADO — ${user.examLabel}`
+        : currentLevel.name;
 
       const xpInLevel = xp - currentLevel.minXP;
       const xpNeeded = nextLevel ? nextLevel.minXP - currentLevel.minXP : 1;
@@ -3779,7 +4340,7 @@
             React.createElement('div', { className: 'level-info' },
               React.createElement('div', { className: 'level-badge' }, currentLevel.emoji),
               React.createElement('div', null,
-                React.createElement('p', { className: 'level-title' }, currentLevel.name),
+                React.createElement('p', { className: 'level-title' }, levelName),
                 React.createElement('p', { className: 'level-subtitle' }, `Nível ${currentLevel.level}`)
               )
             ),
@@ -3880,6 +4441,41 @@
         ),
 
         // ---- FONTES DE XP ----
+        // ---- COUNTDOWN DA PROVA ----
+        React.createElement('div', {
+          style: {
+            background: `linear-gradient(135deg, rgba(${user.exam === 'oab' ? '139,92,246' : '236,72,153'},0.15) 0%, rgba(${user.exam === 'oab' ? '124,58,237' : '219,39,119'},0.08) 100%)`,
+            border: `1px solid rgba(${user.exam === 'oab' ? '139,92,246' : '236,72,153'},0.35)`,
+            borderRadius: '20px', padding: '20px', marginBottom: '16px',
+            display: 'flex', alignItems: 'center', gap: '20px'
+          }
+        },
+          React.createElement('div', {
+            style: {
+              width: '64px', height: '64px', borderRadius: '16px', flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px',
+              background: `linear-gradient(135deg, ${user.exam === 'oab' ? '#8b5cf6, #6d28d9' : '#ec4899, #be185d'})`,
+              boxShadow: `0 8px 24px rgba(${user.exam === 'oab' ? '139,92,246' : '236,72,153'},0.4)`
+            }
+          }, user.exam === 'oab' ? '⚖️' : '📝'),
+          React.createElement('div', { style: { flex: 1 } },
+            React.createElement('p', { style: { fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'rgba(255,255,255,0.45)', marginBottom: '4px' } },
+              `Contagem regressiva · ${user.examLabel}`
+            ),
+            React.createElement('p', { style: { fontSize: '32px', fontWeight: '900', lineHeight: 1, color: user.exam === 'oab' ? '#a78bfa' : '#f9a8d4' } },
+              daysUntilExam
+            ),
+            React.createElement('p', { style: { fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' } },
+              `dias até ${user.exam === 'oab' ? '11/10/2026' : '09/11/2026'} · ${Math.round(daysUntilExam / 7)} semanas`
+            )
+          ),
+          React.createElement('div', { style: { textAlign: 'right', flexShrink: 0 } },
+            React.createElement('p', { style: { fontSize: '11px', color: 'rgba(255,255,255,0.4)' } }, 'Nível alvo'),
+            React.createElement('p', { style: { fontSize: '28px', fontWeight: '900', color: '#eab308' } }, '50'),
+            React.createElement('p', { style: { fontSize: '9px', color: 'rgba(255,255,255,0.3)' } }, 'APROVADO')
+          )
+        ),
+
         React.createElement('h3', { className: 'text-lg font-semibold mb-3' }, '⚡ Fontes de XP'),
         React.createElement('div', { className: 'xp-source-grid' },
           xpSources.map((source, i) =>
@@ -3976,13 +4572,133 @@
         if (thisWeekChamp) { addToast('Campeão desta semana já foi registrado!', 'info'); return; }
         if (myWeekly.score === 0 && partnerWeekly.score === 0) { addToast('Nenhum estudo registrado esta semana ainda!', 'error'); return; }
         const winner = myWeekly.score >= partnerWeekly.score ? userId : user.partner;
-        const badgeWinners = {
-          semana_mais_horas: myWeekly.hours >= partnerWeekly.hours ? userId : user.partner,
-          semana_mais_sessoes: myWeekly.sessionCount >= partnerWeekly.sessionCount ? userId : user.partner,
-          semana_mais_questoes: myWeekly.questions >= partnerWeekly.questions ? userId : user.partner,
-          semana_melhor_acerto: myWeekly.accuracy >= partnerWeekly.accuracy ? userId : user.partner,
-          semana_campeao_geral: winner
+        const me = userId;
+        const pt = user.partner;
+        const mW = myWeekly;
+        const pW = partnerWeekly;
+        // Helper: award badge to whoever meets threshold, or to the higher value
+        const higher = (a, b) => a >= b ? me : pt;
+        const meetsMe = (val, threshold) => mW[val] >= threshold ? me : (pW[val] >= threshold ? pt : null);
+        const meetsPt = (val, threshold) => pW[val] >= threshold ? pt : (mW[val] >= threshold ? me : null);
+        const both = (myVal, ptVal, threshold) => {
+          const myMeets = myVal >= threshold;
+          const ptMeets = ptVal >= threshold;
+          if (myMeets && ptMeets) return 'both';
+          if (myMeets) return me;
+          if (ptMeets) return pt;
+          return null;
         };
+
+        const badgeWinners = {};
+
+        // Comparativos (quem tem mais)
+        badgeWinners.semana_mais_horas = higher(mW.hours, pW.hours);
+        badgeWinners.semana_mais_sessoes = higher(mW.sessionCount, pW.sessionCount);
+        badgeWinners.semana_mais_questoes = higher(mW.questions, pW.questions);
+        badgeWinners.semana_melhor_acerto = higher(mW.accuracy, pW.accuracy);
+        badgeWinners.semana_campeao_geral = winner;
+
+        // Thresholds de horas — quem alcançou
+        [5,10,20,30,40].forEach((h, i) => {
+          const key = ['semana_5h','semana_10h','semana_20h','semana_30h','semana_40h'][i];
+          const r = both(mW.hours, pW.hours, h);
+          if (r) badgeWinners[key] = r;
+        });
+
+        // Thresholds de sessões
+        [[3,'semana_3_sessoes'],[7,'semana_7_sessoes'],[10,'semana_10_sessoes'],[15,'semana_15_sessoes'],[20,'semana_20_sessoes']].forEach(([n,k]) => {
+          const r = both(mW.sessionCount, pW.sessionCount, n);
+          if (r) badgeWinners[k] = r;
+        });
+
+        // Thresholds de questões
+        [[50,'semana_50_questoes'],[100,'semana_100_questoes'],[200,'semana_200_questoes'],[500,'semana_500_questoes'],[1000,'semana_1000_questoes']].forEach(([n,k]) => {
+          const r = both(mW.questions, pW.questions, n);
+          if (r) badgeWinners[k] = r;
+        });
+
+        // Thresholds de acerto
+        [[60,'semana_acerto_60'],[75,'semana_acerto_75'],[85,'semana_acerto_85'],[95,'semana_acerto_95'],[100,'semana_acerto_100']].forEach(([n,k]) => {
+          const r = both(mW.accuracy, pW.accuracy, n);
+          if (r) badgeWinners[k] = r;
+        });
+
+        // 100 respostas certas
+        const myCorrect = getWeeklySessions(sessions[me] || []).reduce((a,s) => a + (s.qC||0), 0);
+        const ptCorrect = getWeeklySessions(sessions[pt] || []).reduce((a,s) => a + (s.qC||0), 0);
+        const rCorrect = both(myCorrect, ptCorrect, 100);
+        if (rCorrect) badgeWinners.semana_100_certas = rCorrect;
+
+        // Sessão longa (3h+)
+        const myLong = Math.max(0, ...getWeeklySessions(sessions[me]||[]).map(s=>(s.h||0)*60+(s.m||0)));
+        const ptLong = Math.max(0, ...getWeeklySessions(sessions[pt]||[]).map(s=>(s.h||0)*60+(s.m||0)));
+        if (myLong >= 180 && ptLong >= 180) { badgeWinners.semana_sessao_longa = 'both'; }
+        else if (myLong >= 180) badgeWinners.semana_sessao_longa = me;
+        else if (ptLong >= 180) badgeWinners.semana_sessao_longa = pt;
+
+        // Sessão foco total (2h+)
+        if (myLong >= 120 && ptLong >= 120) { badgeWinners.semana_foco_total = 'both'; }
+        else if (myLong >= 120) badgeWinners.semana_foco_total = me;
+        else if (ptLong >= 120) badgeWinners.semana_foco_total = pt;
+
+        // Sessões micro
+        const myMicro = getWeeklySessions(sessions[me]||[]).filter(s => { const m=(s.h||0)*60+(s.m||0); return m>=15&&m<=25; }).length;
+        const ptMicro = getWeeklySessions(sessions[pt]||[]).filter(s => { const m=(s.h||0)*60+(s.m||0); return m>=15&&m<=25; }).length;
+        const rMicro = both(myMicro, ptMicro, 5);
+        if (rMicro) badgeWinners.semana_micro_mestre = rMicro;
+
+        // Matérias diferentes na semana
+        const mySubj = new Set(getWeeklySessions(sessions[me]||[]).map(s=>s.subject)).size;
+        const ptSubj = new Set(getWeeklySessions(sessions[pt]||[]).map(s=>s.subject)).size;
+        [[2,'semana_2_materias'],[3,'semana_3_materias'],[5,'semana_5_materias']].forEach(([n,k]) => {
+          const r = both(mySubj, ptSubj, n);
+          if (r) badgeWinners[k] = r;
+        });
+
+        // Dificuldades semanais
+        const myHard = getWeeklySessions(sessions[me]||[]).filter(s=>s.diff==='dificil').length;
+        const ptHard = getWeeklySessions(sessions[pt]||[]).filter(s=>s.diff==='dificil').length;
+        const myMedium = getWeeklySessions(sessions[me]||[]).filter(s=>s.diff==='medio').length;
+        const ptMedium = getWeeklySessions(sessions[pt]||[]).filter(s=>s.diff==='medio').length;
+        const myEasy = getWeeklySessions(sessions[me]||[]).filter(s=>s.diff==='facil').length;
+        const ptEasy = getWeeklySessions(sessions[pt]||[]).filter(s=>s.diff==='facil').length;
+        [[5,'semana_dificil_5'],[10,'semana_dificil_10'],[20,'semana_dificil_20']].forEach(([n,k]) => {
+          const r = both(myHard, ptHard, n);
+          if (r) badgeWinners[k] = r;
+        });
+        if (myEasy >= 10 && ptEasy >= 10) badgeWinners.semana_facil_10 = 'both';
+        else if (myEasy >= 10) badgeWinners.semana_facil_10 = me;
+        else if (ptEasy >= 10) badgeWinners.semana_facil_10 = pt;
+
+        // Semana variada (todos os tipos)
+        if (myHard>0&&myMedium>0&&myEasy>0 && ptHard>0&&ptMedium>0&&ptEasy>0) badgeWinners.semana_variado = 'both';
+        else if (myHard>0&&myMedium>0&&myEasy>0) badgeWinners.semana_variado = me;
+        else if (ptHard>0&&ptMedium>0&&ptEasy>0) badgeWinners.semana_variado = pt;
+
+        // Diversificada (todos os tipos)
+        badgeWinners.semana_diversificada = badgeWinners.semana_variado;
+
+        // Domínio total (ganhou em tudo)
+        const myWins = [mW.hours >= pW.hours, mW.sessionCount >= pW.sessionCount, mW.questions >= pW.questions, mW.accuracy >= pW.accuracy].filter(Boolean).length;
+        const ptWins = [pW.hours >= mW.hours, pW.sessionCount >= mW.sessionCount, pW.questions >= mW.questions, pW.accuracy >= mW.accuracy].filter(Boolean).length;
+        if (myWins === 4) badgeWinners.semana_dominio = me;
+        else if (ptWins === 4) badgeWinners.semana_dominio = pt;
+
+        // Empate honroso
+        if (Math.abs(mW.score - pW.score) < 10) badgeWinners.semana_par = 'both';
+
+        // Casal dedicado
+        if (mW.hours >= 10 && pW.hours >= 10) badgeWinners.semana_ambos_10h = 'both';
+        if (mW.hours >= 20 && pW.hours >= 20) badgeWinners.semana_ambos_20h = 'both';
+
+        // Sem faltas (7 dias) — aproximado pelos dias únicos estudados
+        const myDays = new Set(getWeeklySessions(sessions[me]||[]).map(s => (s.date||s.createdAt||'').slice(0,10))).size;
+        const ptDays = new Set(getWeeklySessions(sessions[pt]||[]).map(s => (s.date||s.createdAt||'').slice(0,10))).size;
+        if (myDays >= 7 && ptDays >= 7) { badgeWinners.semana_todo_dia = 'both'; badgeWinners.semana_zero_faltas = 'both'; }
+        else if (myDays >= 7) { badgeWinners.semana_todo_dia = me; badgeWinners.semana_zero_faltas = me; }
+        else if (ptDays >= 7) { badgeWinners.semana_todo_dia = pt; badgeWinners.semana_zero_faltas = pt; }
+        const r5dias = both(myDays, ptDays, 5);
+        if (r5dias) badgeWinners.semana_5_dias = r5dias;
         const newChamp = {
           week: weekKey,
           weekLabel: `${monday.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} – ${sunday.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`,
@@ -4233,7 +4949,7 @@
     // ============================================
     const StudyPlanScreen = ({ userId, sessions, addToast }) => {
       const user = USERS[userId];
-      const daysUntilExam = getDaysUntilExam();
+      const daysUntilExam = getDaysUntilExam(userId);
       
       const subjectStats = useMemo(() => {
         const stats = {};
@@ -4268,7 +4984,7 @@
         {
           type: 'tip',
           title: '💡 Dica da IA',
-          text: `Faltam ${daysUntilExam} dias para a prova. Estude pelo menos 3 horas por dia para garantir uma boa preparação!`
+          text: `Faltam ${daysUntilExam} dias para ${user.examLabel}. Estude pelo menos 3 horas por dia para garantir uma boa preparação!`
         },
         strongestSubject && {
           type: 'success',
@@ -4304,7 +5020,7 @@
           
           React.createElement('div', { className: 'study-plan-countdown' },
             React.createElement('p', { className: 'study-plan-countdown-value' }, daysUntilExam),
-            React.createElement('p', { className: 'study-plan-countdown-label' }, 'dias até a prova (09/11/2026)')
+            React.createElement('p', { className: 'study-plan-countdown-label' }, `dias até ${user.examLabel} (${user.examDateStr})`)
           ),
           
           recommendations.map((rec, i) => 
@@ -4634,14 +5350,14 @@
       }, [sessions, partnerSessions]);
       
       const currentLevel = LEVELS.find(l => l.level === level) || LEVELS[0];
-      const daysUntilExam = getDaysUntilExam();
+      const daysUntilExam = getDaysUntilExam(userId);
       
       return React.createElement('div', { className: 'dashboard-grid' },
         React.createElement('div', null,
         React.createElement('div', { className: `hero-card ${user.color}` },
           React.createElement('p', { className: 'text-white-80 mb-1' }, `Olá, ${user.name}! 💕`),
           React.createElement('h2', { className: 'text-3xl font-bold mb-2' }, 
-            currentLevel.emoji, ' ', currentLevel.name
+            currentLevel.emoji, ' ', (currentLevel.level === 50 ? `🎓 APROVADO — ${USERS[userId].examLabel}` : currentLevel.name)
           ),
           React.createElement('p', { className: 'text-white-70 mb-3' }, 
             `Nível ${level} • ${xp.toLocaleString()} XP`
@@ -4654,7 +5370,7 @@
               '✅ Estudou hoje'
             ),
             React.createElement('span', { className: 'tag' }, 
-              '📅 ', daysUntilExam, ' dias para prova'
+              '📅 ', daysUntilExam, ` dias · ${user.examLabel}`
             )
           )
         ),
@@ -4876,7 +5592,7 @@
               const userBadges = [];
               const counts = { ...(prev[uid].weeklyBadgeCounts || {}) };
               Object.entries(champ.badges).forEach(([badgeId, winnerId]) => {
-                if (winnerId === uid) {
+                if (winnerId === uid || winnerId === 'both') {
                   userBadges.push(badgeId);
                   counts[badgeId] = (counts[badgeId] || 0) + 1;
                 }
