@@ -1,1617 +1,780 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#F7F5F0">
-<title>StudyCouple</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
-<style>
-/* ─────────────────────────────────────────────
-   TOKENS
-───────────────────────────────────────────── */
-:root {
-  --cream:    #F7F5F0;
-  --cream2:   #EFECE5;
-  --cream3:   #E5E0D5;
-  --ink:      #1A1814;
-  --ink2:     #3D3A35;
-  --ink3:     #7A756C;
-  --ink4:     #B0AA9F;
-  --rule:     #DDD9D0;
-  --m-ink:    #2C3E8C;
-  --m-light:  #EEF1FB;
-  --g-ink:    #8C2C5A;
-  --g-light:  #FBEEEF;
-  --ok:       #1A6B3C;
-  --ok-bg:    #EBF5EF;
-  --warn:     #7A4F00;
-  --warn-bg:  #FEF7E6;
-  --err:      #8B1A1A;
-  --err-bg:   #FDEAEA;
-  --shadow:   0 1px 3px rgba(26,24,20,0.06), 0 4px 12px rgba(26,24,20,0.04);
-  --shadow-lg:0 2px 8px rgba(26,24,20,0.08), 0 12px 32px rgba(26,24,20,0.08);
-  --r:        12px;
-  --r-sm:     8px;
-  --accent:   var(--m-ink);
-  --accent-bg:var(--m-light);
-}
-.g-mode { --accent: var(--g-ink); --accent-bg: var(--g-light); }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nascimento & Bomfim - Gestão Financeira v2.1</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-/* ─────────────────────────────────────────────
-   RESET
-───────────────────────────────────────────── */
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html { height:100%; font-size:16px; }
-body { font-family:'DM Sans', sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
-button { font-family:'DM Sans', sans-serif; cursor:pointer; }
-input, textarea, select { font-family:'DM Sans', sans-serif; }
-::-webkit-scrollbar { width:4px; }
-::-webkit-scrollbar-thumb { background:var(--cream3); border-radius:2px; }
+  <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-/* ─────────────────────────────────────────────
-   SCREENS — the core fix
-───────────────────────────────────────────── */
-#screen-login { display:flex; min-height:100vh; }
-#screen-login.hidden { display:none !important; }
-#screen-app { display:none; flex-direction:column; min-height:100vh; }
-#screen-app.visible { display:flex; }
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; }
+    .fade-in { animation: fadeIn 0.5s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .bg-navy { background-color: #1e293b; }
+    .text-gold { color: #b49b67; }
+    .bg-gold { background-color: #b49b67; }
+    .border-gold { border-color: #b49b67; }
 
-/* ─────────────────────────────────────────────
-   LOGIN
-───────────────────────────────────────────── */
-#screen-login {
-  align-items:center; justify-content:center;
-  background:var(--cream);
-  padding:24px;
-}
-.login-aside {
-  display:none;
-}
-.login-card {
-  width:100%; max-width:400px;
-  background:#fff;
-  border:1px solid var(--rule);
-  border-radius:20px;
-  padding:40px 32px 36px;
-  box-shadow:var(--shadow-lg);
-}
-.login-mark {
-  margin-bottom:32px;
-}
-.login-mark-line {
-  display:flex; align-items:center; gap:10px; margin-bottom:6px;
-}
-.login-mark-dot {
-  width:10px; height:10px; border-radius:50%;
-  background:var(--ink); flex-shrink:0;
-}
-.login-mark h1 {
-  font-family:'DM Serif Display', serif;
-  font-size:26px; font-weight:400; color:var(--ink); line-height:1.1;
-}
-.login-mark p {
-  font-size:13px; color:var(--ink3); font-weight:400; margin-top:4px; line-height:1.5;
-}
+    /* Tags de Permissão */
+    .tag-master { background-color: #7e22ce; color: white; }
+    .tag-admin { background-color: #1e293b; color: white; }
+    .tag-viewer { background-color: #94a3b8; color: white; }
 
-.who-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:28px; }
-.who-btn {
-  padding:14px 10px; border-radius:var(--r);
-  border:1.5px solid var(--rule); background:var(--cream);
-  text-align:center; transition:all 0.18s ease; cursor:pointer;
-}
-.who-btn-name { font-size:13px; font-weight:600; color:var(--ink2); display:block; margin-top:6px; }
-.who-btn-sub  { font-size:11px; color:var(--ink3); display:block; margin-top:2px; }
-.who-btn.sel-m { border-color:var(--m-ink); background:var(--m-light); }
-.who-btn.sel-m .who-btn-name { color:var(--m-ink); }
-.who-btn.sel-g { border-color:var(--g-ink); background:var(--g-light); }
-.who-btn.sel-g .who-btn-name { color:var(--g-ink); }
-
-.field-group { margin-bottom:18px; }
-.field-label { display:block; font-size:11px; font-weight:600; color:var(--ink3); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:7px; }
-.field-wrap { position:relative; }
-.field-input {
-  width:100%; padding:12px 16px; border-radius:var(--r-sm);
-  border:1.5px solid var(--rule); background:#fff;
-  color:var(--ink); font-size:14px; outline:none;
-  transition:border-color 0.18s;
-}
-.field-input:focus { border-color:var(--accent); }
-.field-input::placeholder { color:var(--ink4); }
-.eye-btn {
-  position:absolute; right:14px; top:50%; transform:translateY(-50%);
-  background:none; border:none; color:var(--ink3); font-size:14px;
-  cursor:pointer; padding:4px; line-height:1;
-}
-
-.btn-login {
-  width:100%; padding:13px; border-radius:var(--r-sm); border:none;
-  background:var(--ink); color:#fff;
-  font-size:14px; font-weight:600; letter-spacing:0.2px;
-  transition:all 0.18s; margin-top:4px;
-}
-.btn-login:hover { background:var(--ink2); }
-.btn-login:active { transform:scale(0.98); }
-.btn-login.m-btn { background:var(--m-ink); }
-.btn-login.g-btn { background:var(--g-ink); }
-
-.login-error {
-  margin-top:12px; padding:10px 14px; border-radius:var(--r-sm);
-  background:var(--err-bg); color:var(--err);
-  font-size:13px; font-weight:500; display:none; text-align:center;
-}
-.login-hint { margin-top:20px; text-align:center; font-size:12px; color:var(--ink4); }
-.login-hint code { color:var(--ink3); font-family:monospace; background:var(--cream2); padding:2px 6px; border-radius:4px; }
-
-/* ─────────────────────────────────────────────
-   APP SHELL
-───────────────────────────────────────────── */
-.topbar {
-  position:sticky; top:0; z-index:100; height:56px;
-  background:rgba(247,245,240,0.95); backdrop-filter:blur(12px);
-  border-bottom:1px solid var(--rule);
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 20px;
-}
-.topbar-brand { font-family:'DM Serif Display',serif; font-size:17px; color:var(--ink); }
-.topbar-right { display:flex; align-items:center; gap:10px; }
-.user-chip {
-  display:flex; align-items:center; gap:7px;
-  padding:6px 12px; border-radius:20px;
-  border:1px solid var(--rule); background:#fff;
-  font-size:12px; font-weight:500; color:var(--ink2);
-  cursor:pointer; transition:all 0.15s;
-}
-.user-chip:hover { border-color:var(--ink3); }
-.user-chip-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
-.user-chip-dot.m { background:var(--m-ink); }
-.user-chip-dot.g { background:var(--g-ink); }
-.topbar-notif-btn {
-  width:34px; height:34px; border-radius:8px;
-  border:1px solid var(--rule); background:#fff;
-  display:flex; align-items:center; justify-content:center;
-  cursor:pointer; font-size:15px; position:relative;
-  transition:border-color 0.15s;
-}
-.topbar-notif-btn:hover { border-color:var(--ink3); }
-.notif-badge {
-  position:absolute; top:5px; right:5px;
-  width:7px; height:7px; border-radius:50%;
-  background:var(--err); border:1.5px solid var(--cream); display:none;
-}
-
-.page { flex:1; padding:20px 16px 96px; max-width:640px; margin:0 auto; width:100%; }
-
-/* Bottom nav */
-.botnav {
-  position:fixed; bottom:0; left:0; right:0; z-index:100;
-  background:rgba(247,245,240,0.97); backdrop-filter:blur(12px);
-  border-top:1px solid var(--rule);
-  display:flex; justify-content:space-around; align-items:center;
-  padding:8px 0 calc(8px + env(safe-area-inset-bottom));
-}
-.bn {
-  display:flex; flex-direction:column; align-items:center; gap:4px;
-  padding:6px 16px; border-radius:10px;
-  background:none; border:none; color:var(--ink4);
-  font-size:10px; font-weight:600; letter-spacing:0.2px;
-  transition:color 0.15s; position:relative;
-}
-.bn svg { width:20px; height:20px; stroke-width:1.8; transition:stroke 0.15s; }
-.bn.on { color:var(--accent); }
-.bn.on svg { stroke:var(--accent); }
-.bn-pip {
-  position:absolute; top:4px; right:10px;
-  min-width:14px; height:14px; border-radius:7px;
-  background:var(--err); color:#fff;
-  font-size:9px; font-weight:700;
-  display:none; align-items:center; justify-content:center; padding:0 3px;
-}
-
-/* Tabs */
-.tab { display:none; }
-.tab.on { display:block; }
-
-/* ─────────────────────────────────────────────
-   TYPOGRAPHY & COMPONENTS
-───────────────────────────────────────────── */
-.page-title { font-family:'DM Serif Display',serif; font-size:24px; font-weight:400; color:var(--ink); margin-bottom:4px; }
-.page-sub { font-size:13px; color:var(--ink3); margin-bottom:24px; }
-.section-label { font-size:11px; font-weight:600; color:var(--ink3); text-transform:uppercase; letter-spacing:0.7px; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
-.section-label::after { content:''; flex:1; height:1px; background:var(--rule); }
-
-/* Card */
-.card {
-  background:#fff; border:1px solid var(--rule);
-  border-radius:var(--r); padding:20px; margin-bottom:14px;
-  box-shadow:var(--shadow);
-}
-.card-label { font-size:11px; font-weight:600; color:var(--ink3); text-transform:uppercase; letter-spacing:0.7px; margin-bottom:14px; }
-
-/* Stat grid */
-.stat-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
-.stat-box { background:#fff; border:1px solid var(--rule); border-radius:var(--r); padding:18px 16px; box-shadow:var(--shadow); }
-.stat-val { font-family:'DM Serif Display',serif; font-size:30px; font-weight:400; color:var(--ink); line-height:1; }
-.stat-lbl { font-size:11px; color:var(--ink3); margin-top:5px; font-weight:500; }
-
-/* Progress */
-.prog-wrap { margin-bottom:14px; }
-.prog-head { display:flex; justify-content:space-between; font-size:12px; color:var(--ink3); margin-bottom:7px; font-weight:500; }
-.prog-track { height:6px; background:var(--cream2); border-radius:3px; overflow:hidden; }
-.prog-fill { height:100%; border-radius:3px; transition:width 1s ease; }
-.fill-m { background:var(--m-ink); }
-.fill-g { background:var(--g-ink); }
-
-/* Duel */
-.duel-card { background:#fff; border:1px solid var(--rule); border-radius:var(--r); padding:24px 20px; margin-bottom:14px; box-shadow:var(--shadow); }
-.duel-players { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
-.dp { flex:1; text-align:center; }
-.dp-name { font-size:11px; font-weight:600; color:var(--ink3); text-transform:uppercase; letter-spacing:0.5px; }
-.dp-score { font-family:'DM Serif Display',serif; font-size:40px; font-weight:400; line-height:1; margin-top:4px; }
-.dp.dp-m .dp-score { color:var(--m-ink); }
-.dp.dp-g .dp-score { color:var(--g-ink); }
-.dp-badge { font-size:14px; margin-top:2px; }
-.duel-vs { font-size:12px; font-weight:700; color:var(--ink4); letter-spacing:1px; flex-shrink:0; }
-.duel-bar { display:flex; height:4px; border-radius:2px; overflow:hidden; background:var(--cream2); margin-bottom:10px; }
-.duel-bar-m { background:var(--m-ink); transition:width 1s ease; }
-.duel-bar-g { background:var(--g-ink); transition:width 1s ease; }
-.duel-caption { font-size:12px; color:var(--ink3); text-align:center; font-weight:500; }
-
-/* Streak */
-.streak-row { display:flex; align-items:center; gap:16px; background:#fff; border:1px solid var(--rule); border-radius:var(--r); padding:18px 20px; margin-bottom:14px; box-shadow:var(--shadow); }
-.streak-num { font-family:'DM Serif Display',serif; font-size:32px; color:var(--ink); }
-.streak-label { font-size:12px; color:var(--ink3); margin-top:2px; }
-
-/* Week bars */
-.week-bars { display:flex; align-items:flex-end; gap:6px; height:64px; margin-top:10px; }
-.wb-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; }
-.wb-bar { width:100%; border-radius:3px 3px 0 0; background:var(--cream3); min-height:3px; transition:height 0.8s ease; }
-.wb-bar.has-data { background:var(--accent); }
-.wb-day { font-size:9px; color:var(--ink4); font-weight:600; letter-spacing:0.3px; }
-
-/* Heatmap */
-.hmap { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:8px; }
-.hm { aspect-ratio:1; border-radius:3px; background:var(--cream2); }
-.hm.l1 { background:rgba(44,62,140,0.2); }
-.hm.l2 { background:rgba(44,62,140,0.45); }
-.hm.l3 { background:rgba(44,62,140,0.7); }
-.hm.l4 { background:var(--m-ink); }
-.g-mode .hm.l1 { background:rgba(140,44,90,0.2); }
-.g-mode .hm.l2 { background:rgba(140,44,90,0.45); }
-.g-mode .hm.l3 { background:rgba(140,44,90,0.7); }
-.g-mode .hm.l4 { background:var(--g-ink); }
-.hmap-labels { display:flex; justify-content:space-between; font-size:10px; color:var(--ink4); margin-bottom:5px; }
-
-/* Sessions list */
-.sess { background:#fff; border:1px solid var(--rule); border-radius:var(--r); padding:16px; margin-bottom:10px; box-shadow:var(--shadow); transition:border-color 0.15s; }
-.sess:hover { border-color:var(--ink3); }
-.sess-top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
-.sess-subj { font-weight:600; font-size:14px; color:var(--ink); }
-.sess-date { font-size:11px; color:var(--ink4); flex-shrink:0; }
-.sess-preview { font-size:12px; color:var(--ink3); margin-top:5px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.chips { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
-.chip { padding:3px 9px; border-radius:20px; font-size:11px; font-weight:500; background:var(--cream2); color:var(--ink3); border:1px solid var(--rule); }
-.chip.ok  { background:var(--ok-bg);   color:var(--ok);   border-color:rgba(26,107,60,0.2); }
-.chip.warn{ background:var(--warn-bg); color:var(--warn); border-color:rgba(122,79,0,0.2); }
-.chip.err { background:var(--err-bg);  color:var(--err);  border-color:rgba(139,26,26,0.2); }
-
-/* Achievements */
-.ach-row { display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; }
-.ach-row::-webkit-scrollbar { display:none; }
-.ach { flex-shrink:0; text-align:center; padding:12px 14px; border-radius:var(--r); background:var(--cream); border:1px solid var(--rule); min-width:72px; }
-.ach.on { background:#fff; border-color:var(--ink3); }
-.ach.off { opacity:0.4; filter:grayscale(1); }
-.ach-ic { font-size:20px; }
-.ach-nm { font-size:9px; font-weight:600; color:var(--ink3); margin-top:5px; text-transform:uppercase; letter-spacing:0.3px; line-height:1.3; }
-
-/* Subjects */
-.subj-card { background:#fff; border:1px solid var(--rule); border-radius:var(--r); padding:16px 18px; margin-bottom:10px; display:flex; align-items:center; gap:14px; cursor:pointer; transition:all 0.15s; box-shadow:var(--shadow); }
-.subj-card:hover { border-color:var(--ink3); transform:translateY(-1px); box-shadow:var(--shadow-lg); }
-.subj-ic { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; flex-shrink:0; }
-.subj-info { flex:1; min-width:0; }
-.subj-name { font-weight:600; font-size:14px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.subj-meta { font-size:11px; color:var(--ink3); margin-top:3px; }
-.subj-mini-bar { height:2px; background:var(--cream2); border-radius:1px; margin-top:6px; overflow:hidden; }
-.subj-mini-fill { height:100%; border-radius:1px; }
-.subj-pct { font-family:'DM Serif Display',serif; font-size:20px; flex-shrink:0; }
-.subj-chev { color:var(--ink4); flex-shrink:0; }
-
-/* Forms */
-.fg { margin-bottom:18px; }
-.fg label { display:block; font-size:11px; font-weight:600; color:var(--ink3); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:7px; }
-.fg input, .fg textarea, .fg select {
-  width:100%; padding:12px 16px; border-radius:var(--r-sm);
-  border:1.5px solid var(--rule); background:#fff;
-  color:var(--ink); font-size:14px; outline:none; resize:vertical;
-  transition:border-color 0.18s;
-}
-.fg textarea { min-height:110px; line-height:1.6; }
-.fg input:focus, .fg textarea:focus, .fg select:focus { border-color:var(--accent); }
-.fg input::placeholder, .fg textarea::placeholder { color:var(--ink4); }
-.fg select option { background:#fff; }
-.fg-row { display:flex; gap:12px; }
-.fg-row .fg { flex:1; }
-.char-info { text-align:right; font-size:11px; color:var(--ink4); margin-top:4px; }
-
-.diff-row { display:flex; gap:8px; }
-.diff-opt {
-  flex:1; padding:10px 6px; border-radius:var(--r-sm);
-  border:1.5px solid var(--rule); background:#fff;
-  font-size:12px; font-weight:600; color:var(--ink3);
-  text-align:center; transition:all 0.15s; cursor:pointer;
-}
-.diff-opt:hover { border-color:var(--ink3); color:var(--ink); }
-.diff-opt.d-ok   { border-color:var(--ok);   color:var(--ok);   background:var(--ok-bg); }
-.diff-opt.d-warn { border-color:var(--warn); color:var(--warn); background:var(--warn-bg); }
-.diff-opt.d-err  { border-color:var(--err);  color:var(--err);  background:var(--err-bg); }
-
-/* Buttons */
-.btn {
-  display:block; width:100%; padding:13px 20px; border-radius:var(--r-sm); border:none;
-  font-size:14px; font-weight:600; color:#fff; letter-spacing:0.2px;
-  cursor:pointer; transition:all 0.18s; text-align:center;
-}
-.btn-ink { background:var(--ink); }
-.btn-ink:hover { background:var(--ink2); }
-.btn-accent { background:var(--accent); }
-.btn-accent:hover { opacity:0.9; }
-.btn-outline { background:#fff; border:1.5px solid var(--rule); color:var(--ink2); }
-.btn-outline:hover { border-color:var(--ink3); }
-.btn:active { transform:scale(0.98); }
-.btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
-.btn-sm { width:auto; padding:9px 16px; font-size:13px; }
-
-/* Timer */
-.timer-box { background:#fff; border:1px solid var(--rule); border-radius:var(--r); padding:20px; margin-bottom:14px; text-align:center; box-shadow:var(--shadow); }
-.timer-display { font-family:'DM Serif Display',serif; font-size:48px; color:var(--ink); letter-spacing:2px; line-height:1; }
-.timer-display.running { color:var(--accent); }
-.timer-btns { display:flex; gap:10px; margin-top:16px; }
-.timer-btns .btn { flex:1; }
-
-/* Quiz */
-.quiz-card { background:#fff; border:1px solid var(--rule); border-radius:var(--r); padding:20px; margin-bottom:12px; box-shadow:var(--shadow); }
-.quiz-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
-.q-counter { font-size:11px; font-weight:600; color:var(--ink3); text-transform:uppercase; letter-spacing:0.5px; }
-.q-badge { padding:3px 9px; border-radius:20px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px; }
-.q-badge.lv-facil  { background:var(--ok-bg);   color:var(--ok); }
-.q-badge.lv-medio  { background:var(--warn-bg);  color:var(--warn); }
-.q-badge.lv-dificil{ background:var(--err-bg);   color:var(--err); }
-.q-text { font-size:15px; font-weight:500; line-height:1.65; color:var(--ink); margin-bottom:16px; }
-.q-opts { display:flex; flex-direction:column; gap:8px; }
-.q-opt {
-  padding:12px 16px; border-radius:var(--r-sm);
-  background:var(--cream); border:1.5px solid var(--rule);
-  font-size:14px; font-weight:500; text-align:left; color:var(--ink);
-  transition:all 0.15s; line-height:1.4;
-}
-.q-opt:hover:not(:disabled) { border-color:var(--accent); background:var(--accent-bg); }
-.q-opt.right { border-color:var(--ok); background:var(--ok-bg); color:var(--ok); }
-.q-opt.wrong { border-color:var(--err); background:var(--err-bg); color:var(--err); }
-.q-opt:disabled { cursor:default; }
-.q-explain { margin-top:12px; padding:12px 16px; border-radius:var(--r-sm); background:var(--cream2); font-size:13px; line-height:1.6; color:var(--ink2); border-left:3px solid var(--accent); display:none; }
-
-.quiz-progress { background:#fff; border:1px solid var(--rule); border-radius:var(--r); padding:18px 20px; margin-bottom:14px; box-shadow:var(--shadow); }
-.qp-top { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
-.qp-score { font-family:'DM Serif Display',serif; font-size:28px; color:var(--accent); }
-.qp-pct { font-size:12px; color:var(--ink3); font-weight:500; }
-.qp-track { height:4px; background:var(--cream2); border-radius:2px; overflow:hidden; }
-.qp-fill { height:100%; background:var(--accent); transition:width 0.4s ease; border-radius:2px; }
-
-/* Goals */
-.goal-item { display:flex; align-items:center; gap:12px; padding:13px 16px; background:var(--cream); border-radius:var(--r-sm); margin-bottom:8px; border:1px solid var(--rule); }
-.goal-check { width:20px; height:20px; border-radius:5px; border:1.5px solid var(--rule); background:#fff; flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
-.goal-check.done { background:var(--ok); border-color:var(--ok); }
-.goal-check.done::after { content:'✓'; color:#fff; font-size:11px; font-weight:700; }
-.goal-text { flex:1; font-size:14px; font-weight:500; color:var(--ink); }
-.goal-text.done { text-decoration:line-through; color:var(--ink4); }
-.goal-rm { background:none; border:none; color:var(--ink4); font-size:18px; cursor:pointer; padding:2px 4px; line-height:1; }
-
-/* Ranking */
-.rank-item { display:flex; align-items:center; gap:14px; padding:14px 16px; background:var(--cream); border-radius:var(--r-sm); margin-bottom:8px; border:1px solid var(--rule); }
-.rank-medal { font-size:22px; flex-shrink:0; }
-.rank-info { flex:1; }
-.rank-name { font-size:14px; font-weight:600; color:var(--ink); }
-.rank-detail { font-size:11px; color:var(--ink3); margin-top:2px; }
-.rank-pts { font-family:'DM Serif Display',serif; font-size:22px; color:var(--accent); }
-
-/* Flashcard */
-.flashcard { perspective:1000px; cursor:pointer; margin-bottom:12px; }
-.fc-inner { position:relative; width:100%; height:160px; transform-style:preserve-3d; transition:transform 0.55s ease; }
-.flashcard.flip .fc-inner { transform:rotateY(180deg); }
-.fc-face {
-  position:absolute; inset:0; backface-visibility:hidden;
-  background:#fff; border:1px solid var(--rule); border-radius:var(--r);
-  padding:20px 24px; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; text-align:center; gap:8px;
-  box-shadow:var(--shadow);
-}
-.fc-back { transform:rotateY(180deg); background:var(--accent-bg); border-color:var(--accent); }
-.fc-tag { font-size:10px; font-weight:700; color:var(--ink3); text-transform:uppercase; letter-spacing:0.8px; }
-.fc-text { font-size:14px; font-weight:500; color:var(--ink); line-height:1.5; }
-.fc-nav { display:flex; gap:10px; margin-top:10px; }
-
-/* Notification panel */
-.notif-overlay { position:fixed; inset:0; z-index:200; display:none; }
-.notif-overlay.open { display:block; }
-.notif-panel {
-  position:fixed; top:57px; right:12px; z-index:201;
-  width:min(320px, calc(100vw - 24px));
-  background:#fff; border:1px solid var(--rule); border-radius:var(--r);
-  box-shadow:var(--shadow-lg); padding:16px;
-  max-height:320px; overflow-y:auto;
-  display:none;
-}
-.notif-panel.open { display:block; }
-.notif-item { padding:10px 12px; border-radius:var(--r-sm); background:var(--cream); margin-bottom:8px; font-size:13px; line-height:1.5; color:var(--ink2); border-left:3px solid var(--accent); }
-.notif-time { font-size:10px; color:var(--ink4); margin-bottom:3px; }
-
-/* Back button */
-.back-btn { display:inline-flex; align-items:center; gap:6px; background:none; border:none; color:var(--ink3); font-size:13px; font-weight:600; margin-bottom:20px; cursor:pointer; padding:0; }
-.back-btn svg { width:16px; height:16px; }
-.back-btn:hover { color:var(--ink); }
-
-/* Empty */
-.empty { text-align:center; padding:48px 24px; color:var(--ink3); }
-.empty h3 { font-family:'DM Serif Display',serif; font-size:20px; color:var(--ink); margin-bottom:8px; font-weight:400; }
-.empty p { font-size:13px; line-height:1.6; }
-
-/* Toast */
-.toast {
-  position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(8px);
-  background:var(--ink); color:#fff; padding:11px 18px; border-radius:var(--r-sm);
-  font-size:13px; font-weight:500; z-index:999;
-  box-shadow:var(--shadow-lg); opacity:0;
-  transition:all 0.25s ease; pointer-events:none; white-space:nowrap;
-}
-.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-
-/* Filter tags */
-.filter-strip { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:16px; }
-.f-tag { padding:5px 13px; border-radius:20px; border:1.5px solid var(--rule); background:#fff; font-size:12px; font-weight:600; color:var(--ink3); cursor:pointer; transition:all 0.15s; }
-.f-tag:hover { border-color:var(--ink3); color:var(--ink); }
-.f-tag.on { border-color:var(--accent); color:var(--accent); background:var(--accent-bg); }
-
-/* Quote card */
-.quote-card { background:#fff; border:1px solid var(--rule); border-radius:var(--r); padding:20px; margin-bottom:14px; box-shadow:var(--shadow); }
-.quote-text { font-family:'DM Serif Display',serif; font-size:16px; font-style:italic; color:var(--ink); line-height:1.6; }
-.quote-auth { font-size:12px; color:var(--ink3); margin-top:8px; font-weight:500; }
-
-/* Confetti */
-.cf { position:fixed; pointer-events:none; z-index:9999; animation:cfFall 2s ease-in forwards; }
-@keyframes cfFall { 0%{opacity:1;transform:translateY(-10px) rotate(var(--rot))} 100%{opacity:0;transform:translateY(100vh) rotate(calc(var(--rot) + 540deg))} }
-
-/* Animations — subtle only */
-@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-.fade-in { animation:fadeIn 0.35s ease both; }
-@keyframes spin { to{transform:rotate(360deg)} }
-.spinner { width:28px; height:28px; border-radius:50%; border:2.5px solid var(--cream3); border-top-color:var(--accent); animation:spin 0.7s linear infinite; margin:0 auto; }
-.loading { text-align:center; padding:36px; }
-.loading p { font-size:13px; color:var(--ink3); margin-top:12px; }
-
-@media(min-width:600px){
-  .page { padding:24px 24px 96px; }
-  .stat-row { grid-template-columns:repeat(4,1fr); }
-  .login-aside { display:flex; }
-}
-</style>
+    @media print {
+      body { background-color: white; }
+      header, .no-print, button { display: none !important; }
+      .shadow-sm, .shadow-2xl { box-shadow: none !important; }
+      .bg-slate-50 { background-color: white !important; }
+      .text-white { color: black !important; }
+      .bg-navy { background-color: transparent !important; color: black !important; }
+      .print-break { page-break-inside: avoid; }
+    }
+  </style>
 </head>
 <body>
-
-<div id="screen-login">
-  <div class="login-card">
-    <div class="login-mark">
-      <div class="login-mark-line">
-        <div class="login-mark-dot"></div>
-        <h1>StudyCouple</h1>
-      </div>
-      <p>Manassés &amp; Gleici — Estudo competitivo e organizado</p>
-    </div>
-
-    <div class="who-row">
-      <button class="who-btn sel-m" id="wb-m" onclick="pickUser('manasses')">
-        <span style="font-size:22px">👨‍💼</span>
-        <span class="who-btn-name">Manassés</span>
-        <span class="who-btn-sub">OAB · Direito</span>
-      </button>
-      <button class="who-btn" id="wb-g" onclick="pickUser('gleici')">
-        <span style="font-size:22px">👩‍🎓</span>
-        <span class="who-btn-name">Gleici</span>
-        <span class="who-btn-sub">ENEM · Ensino Médio</span>
-      </button>
-    </div>
-
-    <div class="field-group">
-      <label class="field-label">Senha</label>
-      <div class="field-wrap">
-        <input class="field-input" type="password" id="l-pass" placeholder="Digite sua senha"
-          onkeydown="if(event.key==='Enter')doLogin()">
-        <button type="button" class="eye-btn" id="eye-btn" onclick="togglePwd()">👁</button>
-      </div>
-    </div>
-
-    <button class="btn btn-ink m-btn" id="l-btn" type="button" onclick="doLogin()">Entrar</button>
-    <div class="login-error" id="l-err">Senha incorreta. Tente novamente.</div>
-    <p class="login-hint">Primeira vez? Senha padrão: <code>estudo123</code></p>
-  </div>
-</div>
-
-<div id="screen-app">
-
-  <nav class="topbar">
-    <div class="topbar-brand">StudyCouple</div>
-    <div class="topbar-right">
-      <div class="topbar-notif-btn" onclick="toggleNotif()" id="notif-btn">
-        🔔
-        <div class="notif-badge" id="notif-badge"></div>
-      </div>
-      <div class="user-chip" onclick="doLogout()">
-        <div class="user-chip-dot" id="chip-dot"></div>
-        <span id="chip-name"></span>
-        <span style="color:var(--ink4);font-size:11px">· sair</span>
-      </div>
-    </div>
-  </nav>
-
-  <div class="notif-overlay" id="notif-overlay" onclick="closeNotif()"></div>
-  <div class="notif-panel" id="notif-panel">
-    <div style="font-size:11px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px">Notificações</div>
-    <div id="notif-list"></div>
-  </div>
-
-  <div class="page">
-
-    <div class="tab on" id="t-home">
-      <p class="page-title" id="h-greeting">Olá!</p>
-      <p class="page-sub" id="h-sub"></p>
-
-      <div class="quote-card fade-in" id="quote-card">
-        <div class="quote-text" id="q-text"></div>
-        <div class="quote-auth" id="q-auth"></div>
-      </div>
-
-      <div class="duel-card fade-in">
-        <div class="card-label">Placar</div>
-        <div class="duel-players">
-          <div class="dp dp-m">
-            <div class="dp-name">Manassés</div>
-            <div class="dp-score" id="d-m">0</div>
-            <div class="dp-badge" id="d-m-crown"></div>
-          </div>
-          <div class="duel-vs">VS</div>
-          <div class="dp dp-g">
-            <div class="dp-name">Gleici</div>
-            <div class="dp-score" id="d-g">0</div>
-            <div class="dp-badge" id="d-g-crown"></div>
-          </div>
-        </div>
-        <div class="duel-bar">
-          <div class="duel-bar-m" id="db-m" style="width:50%"></div>
-          <div class="duel-bar-g" id="db-g" style="width:50%"></div>
-        </div>
-        <div class="duel-caption" id="duel-cap">Empate técnico</div>
-      </div>
-
-      <div class="streak-row fade-in">
-        <span id="streak-icon" style="font-size:28px">🌱</span>
-        <div>
-          <div class="streak-num" id="streak-n">0 dias</div>
-          <div class="streak-label" id="streak-msg">Comece sua sequência hoje</div>
-        </div>
-      </div>
-
-      <div class="stat-row">
-        <div class="stat-box fade-in">
-          <div class="stat-val" id="s-h">0h</div>
-          <div class="stat-lbl">Horas estudadas</div>
-        </div>
-        <div class="stat-box fade-in">
-          <div class="stat-val" id="s-c">0</div>
-          <div class="stat-lbl">Acertos totais</div>
-        </div>
-        <div class="stat-box fade-in">
-          <div class="stat-val" id="s-p">—</div>
-          <div class="stat-lbl">Taxa de acerto</div>
-        </div>
-        <div class="stat-box fade-in">
-          <div class="stat-val" id="s-s">0</div>
-          <div class="stat-lbl">Matérias</div>
-        </div>
-      </div>
-
-      <div class="card fade-in">
-        <div class="card-label">Questões respondidas</div>
-        <div class="prog-wrap">
-          <div class="prog-head">
-            <span style="color:var(--m-ink);font-weight:600">Manassés</span>
-            <span id="pm-v">0</span>
-          </div>
-          <div class="prog-track"><div class="prog-fill fill-m" id="pm-bar" style="width:0%"></div></div>
-        </div>
-        <div class="prog-wrap" style="margin-top:12px">
-          <div class="prog-head">
-            <span style="color:var(--g-ink);font-weight:600">Gleici</span>
-            <span id="pg-v">0</span>
-          </div>
-          <div class="prog-track"><div class="prog-fill fill-g" id="pg-bar" style="width:0%"></div></div>
-        </div>
-      </div>
-
-      <div class="card fade-in">
-        <div class="card-label">Atividade — últimos 7 dias</div>
-        <div class="week-bars" id="week-bars"></div>
-      </div>
-
-      <div class="card fade-in">
-        <div class="card-label">Calendário de estudo</div>
-        <div class="hmap-labels"><span>28 dias atrás</span><span>hoje</span></div>
-        <div class="hmap" id="hmap"></div>
-      </div>
-
-      <div class="card fade-in">
-        <div class="card-label">Conquistas</div>
-        <div class="ach-row" id="ach-row"></div>
-      </div>
-
-      <div class="card fade-in">
-        <div class="card-label">Sessões recentes</div>
-        <div id="recent-list"></div>
-      </div>
-    </div>
-
-    <div class="tab" id="t-mat">
-      <div id="v-mat-list">
-        <p class="page-title">Matérias</p>
-        <p class="page-sub" id="mat-sub"></p>
-        <div class="filter-strip">
-          <button class="f-tag on" data-f="all" onclick="fSubj('all',this)">Todas</button>
-          <button class="f-tag" data-f="ok"  onclick="fSubj('ok',this)">Acima de 70%</button>
-          <button class="f-tag" data-f="mid" onclick="fSubj('mid',this)">40–70%</button>
-          <button class="f-tag" data-f="low" onclick="fSubj('low',this)">Abaixo de 40%</button>
-        </div>
-        <div id="subj-list"></div>
-      </div>
-      <div id="v-mat-detail" style="display:none">
-        <button class="back-btn" onclick="backMat()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-          Voltar
-        </button>
-        <div id="mat-detail"></div>
-      </div>
-    </div>
-
-    <div class="tab" id="t-add">
-      <p class="page-title">Nova Sessão</p>
-      <p class="page-sub">Registre o que você estudou</p>
-
-      <div class="timer-box fade-in">
-        <div class="card-label" style="text-align:left;margin-bottom:12px">Cronômetro</div>
-        <div class="timer-display" id="timer-disp">00:00:00</div>
-        <div class="timer-btns">
-          <button type="button" class="btn btn-outline btn-sm" style="flex:1" id="timer-start-btn" onclick="timerToggle()">Iniciar</button>
-          <button type="button" class="btn btn-outline btn-sm" style="flex:1" onclick="timerReset()">Zerar</button>
-        </div>
-      </div>
-
-      <div class="card fade-in">
-        <div class="fg">
-          <label>Matéria</label>
-          <input type="text" id="f-subj" placeholder="Ex: Direito Constitucional, Biologia..." list="f-subj-dl">
-          <datalist id="f-subj-dl"></datalist>
-        </div>
-        <div class="fg">
-          <label>Conteúdo estudado <span style="text-transform:none;font-weight:400;color:var(--ink4)">(mais detalhes = questões melhores)</span></label>
-          <textarea id="f-body" placeholder="Descreva detalhadamente o que você estudou. Inclua conceitos, regras, artigos, exemplos..." oninput="updateCC()"></textarea>
-          <div class="char-info"><span id="cc">0</span> caracteres</div>
-        </div>
-        <div class="fg-row">
-          <div class="fg">
-            <label>Horas</label>
-            <input type="number" id="f-h" min="0" max="12" value="0">
-          </div>
-          <div class="fg">
-            <label>Minutos</label>
-            <input type="number" id="f-m" min="0" max="59" step="5" value="0">
-          </div>
-        </div>
-        <div class="fg">
-          <label>Dificuldade das questões</label>
-          <div class="diff-row">
-            <button type="button" class="diff-opt d-ok" data-d="facil" onclick="pickDiff('facil')">Fácil</button>
-            <button type="button" class="diff-opt" data-d="medio" onclick="pickDiff('medio')">Médio</button>
-            <button type="button" class="diff-opt" data-d="dificil" onclick="pickDiff('dificil')">Difícil</button>
-          </div>
-        </div>
-        <div class="fg">
-          <label>Quantidade de questões</label>
-          <select id="f-nq">
-            <option value="3">3 questões — revisão rápida</option>
-            <option value="5" selected>5 questões — padrão</option>
-            <option value="7">7 questões — aprofundado</option>
-            <option value="10">10 questões — treino intenso</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>Observações / dúvidas <span style="text-transform:none;font-weight:400;color:var(--ink4)">(opcional)</span></label>
-          <input type="text" id="f-obs" placeholder="Ex: Fiquei em dúvida sobre habeas corpus...">
-        </div>
-        <button type="button" class="btn btn-accent" id="add-btn" onclick="addSession()">Salvar e gerar questões</button>
-      </div>
-    </div>
-
-    <div class="tab" id="t-quiz">
-      <div id="v-quiz-list">
-        <p class="page-title">Questões</p>
-        <p class="page-sub" id="quiz-sub"></p>
-        <div class="filter-strip">
-          <button class="f-tag on" data-qf="all"     onclick="fQuiz('all',this)">Todas</button>
-          <button class="f-tag"    data-qf="pending"  onclick="fQuiz('pending',this)">Pendentes</button>
-          <button class="f-tag"    data-qf="done"     onclick="fQuiz('done',this)">Realizadas</button>
-        </div>
-        <div id="quiz-sess-list"></div>
-      </div>
-      <div id="v-quiz-play" style="display:none">
-        <button class="back-btn" onclick="backQuiz()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-          Voltar
-        </button>
-        <div class="quiz-progress">
-          <div class="qp-top">
-            <div class="qp-score" id="qp-score">0 / 0</div>
-            <div class="qp-pct" id="qp-pct">Responda as questões abaixo</div>
-          </div>
-          <div class="qp-track"><div class="qp-fill" id="qp-fill" style="width:0%"></div></div>
-        </div>
-        <div id="quiz-q-wrap"></div>
-        <button type="button" class="btn btn-accent" id="btn-finish" onclick="finishQuiz()" style="display:none;margin-top:4px">Finalizar quiz</button>
-      </div>
-    </div>
-
-    <div class="tab" id="t-metas">
-      <p class="page-title">Metas</p>
-      <p class="page-sub">Ranking, objetivos e revisão</p>
-
-      <div class="card fade-in">
-        <div class="card-label">Ranking semanal</div>
-        <div id="ranking"></div>
-      </div>
-
-      <div class="card fade-in">
-        <div class="card-label">Metas do dia</div>
-        <div id="goals-list"></div>
-        <div style="display:flex;gap:10px;margin-top:12px">
-          <input type="text" id="goal-inp" class="field-input" style="flex:1" placeholder="Nova meta..."
-            onkeydown="if(event.key==='Enter')addGoal()">
-          <button type="button" class="btn btn-ink btn-sm" onclick="addGoal()">Adicionar</button>
-        </div>
-      </div>
-
-      <div class="card fade-in">
-        <div class="card-label">Flashcards — revisão rápida</div>
-        <div id="fc-area">
-          <div class="empty" style="padding:24px">
-            <p>Adicione sessões de estudo para gerar flashcards</p>
-          </div>
-        </div>
-        <div id="fc-nav" style="display:none" class="fc-nav">
-          <button type="button" class="btn btn-outline btn-sm" style="flex:1" onclick="fcPrev()">← Anterior</button>
-          <button type="button" class="btn btn-outline btn-sm" style="flex:1" onclick="fcNext()">Próximo →</button>
-        </div>
-      </div>
-
-      <div class="card fade-in">
-        <div class="card-label">Segurança</div>
-        <div class="fg" style="margin-bottom:10px">
-          <label>Nova senha</label>
-          <input type="password" id="new-pwd" class="field-input" placeholder="Mínimo 4 caracteres">
-        </div>
-        <button type="button" class="btn btn-outline" onclick="changePwd()">Alterar senha</button>
-      </div>
-    </div>
-
-  </div><nav class="botnav">
-    <button class="bn on" data-t="home" onclick="goTab('home',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      Início
-    </button>
-    <button class="bn" data-t="mat" onclick="goTab('mat',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
-      Matérias
-    </button>
-    <button class="bn" data-t="add" onclick="goTab('add',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
-      Adicionar
-    </button>
-    <button class="bn" data-t="quiz" onclick="goTab('quiz',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 12h6M9 16h6M9 8h3"/><path d="M5 3h14a2 2 0 012 2v16a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
-      Questões
-      <div class="bn-pip" id="quiz-pip"></div>
-    </button>
-    <button class="bn" data-t="metas" onclick="goTab('metas',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-      Metas
-    </button>
-  </nav>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-/* ──────────────────────────────────────────
-   CONFIG
-────────────────────────────────────────── */
-const USERS = {
-  manasses: { id:'manasses', name:'Manassés', emoji:'👨‍💼', color:'m', profile:'OAB · Faculdade de Direito', focus:'Questões no estilo OAB/FGV com linguagem jurídica, situações-problema e casos práticos típicos da banca.' },
-  gleici:   { id:'gleici',   name:'Gleici',   emoji:'👩‍🎓', color:'g', profile:'ENEM · Ensino Médio',          focus:'Questões no estilo ENEM com texto de apoio, contexto social e científico, abordagem interdisciplinar.' }
-};
-
-const QUOTES = [
-  { t:'O sucesso é a soma de pequenos esforços repetidos dia após dia.', a:'Robert Collier' },
-  { t:'Conhecimento é poder.', a:'Francis Bacon' },
-  { t:'A persistência é o caminho do êxito.', a:'Charles Chaplin' },
-  { t:'O único lugar onde o sucesso vem antes do trabalho é no dicionário.', a:'Vidal Sassoon' },
-  { t:'A mente que se abre a uma nova ideia jamais voltará ao seu tamanho original.', a:'Albert Einstein' },
-  { t:'Invista em você. Seu nível de educação é o único ativo que ninguém pode tirar.', a:'Oprah Winfrey' },
-  { t:'O futuro pertence àqueles que acreditam na beleza dos seus sonhos.', a:'Eleanor Roosevelt' },
-];
-
-const ACH = [
-  { id:'s1',   icon:'🌱', name:'Primeira sessão', ok: s => s.length >= 1 },
-  { id:'s5',   icon:'⭐', name:'5 sessões',        ok: s => s.length >= 5 },
-  { id:'s10',  icon:'🏅', name:'10 sessões',       ok: s => s.length >= 10 },
-  { id:'perf', icon:'💎', name:'Quiz perfeito',    ok: s => s.some(x => x.qDone && x.qC === x.qT && x.qT > 0) },
-  { id:'str3', icon:'🔥', name:'3 dias seguidos',  ok: s => streak(s) >= 3 },
-  { id:'str7', icon:'🏆', name:'7 dias seguidos',  ok: s => streak(s) >= 7 },
-  { id:'h10',  icon:'⏰', name:'10h estudadas',    ok: s => s.reduce((a,b)=>a+(b.h||0)*60+(b.m||0),0) >= 600 },
-  { id:'mat5', icon:'📚', name:'5 matérias',       ok: (s,sm) => Object.keys(sm).length >= 5 },
-];
-
-const COLORS = ['#2C3E8C','#8C2C5A','#1A6B3C','#7A4F00','#4A2C8C','#0A5A7A','#6B1A1A','#3A6B1A'];
-
-/* ──────────────────────────────────────────
-   STATE
-────────────────────────────────────────── */
-let CU = null, selU = 'manasses', selDiff = 'facil';
-let qSess = null, qAns = 0, qOk = 0;
-let timerInt = null, timerSec = 0, timerOn = false;
-let fcIdx = 0, fcCards = [];
-let qFilter = 'all', sFilter = 'all';
-let notifOpen = false;
-
-/* ──────────────────────────────────────────
-   STORAGE
-────────────────────────────────────────── */
-function db(){ try{ return JSON.parse(localStorage.getItem('sc3')||'{}') }catch{ return {} } }
-function save(d){ localStorage.setItem('sc3', JSON.stringify(d)) }
-function getSess(uid){ return (db()[uid]||{}).sessions||[] }
-function getPass(uid){ return (db()[uid]||{}).pass || 'estudo123' }
-function getGoals(uid){ return (db()[uid]||{}).goals||[] }
-function getNotifs(uid){ return (db()[uid]||{}).notifs||[] }
-
-function pushSess(uid, s){
-  const d=db(); if(!d[uid])d[uid]={sessions:[]};
-  if(!d[uid].sessions)d[uid].sessions=[];
-  d[uid].sessions.push(s); save(d);
-}
-function markQuiz(uid, sid, c, t){
-  const d=db(); const s=(d[uid]?.sessions||[]).find(x=>x.id===sid);
-  if(s){s.qDone=true;s.qC=c;s.qT=t;save(d);}
-}
-function setPass(uid,p){ const d=db(); if(!d[uid])d[uid]={}; d[uid].pass=p; save(d); }
-function saveGoals(uid,g){ const d=db(); if(!d[uid])d[uid]={}; d[uid].goals=g; save(d); }
-function pushNotif(uid,msg){
-  const d=db(); if(!d[uid])d[uid]={};
-  if(!d[uid].notifs)d[uid].notifs=[];
-  d[uid].notifs.unshift({msg, t:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})});
-  d[uid].notifs = d[uid].notifs.slice(0,15); save(d);
-}
-function clearNotifs(uid){ const d=db(); if(d[uid])d[uid].notifs=[]; save(d); }
-
-/* ──────────────────────────────────────────
-   LOGIN
-────────────────────────────────────────── */
-function pickUser(uid){
-  selU = uid;
-  document.getElementById('wb-m').className = 'who-btn' + (uid==='manasses' ? ' sel-m' : '');
-  document.getElementById('wb-g').className = 'who-btn' + (uid==='gleici'   ? ' sel-g' : '');
-  const btn = document.getElementById('l-btn');
-  btn.className = 'btn btn-ink ' + (uid==='gleici' ? 'g-btn' : 'm-btn');
-  document.getElementById('l-err').style.display = 'none';
-}
-
-function togglePwd(){
-  const f = document.getElementById('l-pass');
-  const b = document.getElementById('eye-btn');
-  if(f.type==='password'){ f.type='text'; b.textContent='🙈'; }
-  else { f.type='password'; b.textContent='👁'; }
-  f.focus();
-}
-
-function doLogin(){
-  const pass = document.getElementById('l-pass').value;
-  if(pass === getPass(selU)){
-    CU = selU;
-    // hide login
-    const loginEl = document.getElementById('screen-login');
-    loginEl.classList.add('hidden');
-    // show app
-    const appEl = document.getElementById('screen-app');
-    appEl.classList.add('visible');
-    initApp();
-  } else {
-    document.getElementById('l-err').style.display = 'block';
-    const f = document.getElementById('l-pass');
-    f.style.borderColor = 'var(--err)';
-    setTimeout(()=>{ f.style.borderColor=''; }, 1500);
-  }
-}
-
-function doLogout(){
-  CU = null;
-  timerStop();
-  document.getElementById('l-pass').value = '';
-  document.getElementById('l-err').style.display = 'none';
-  const appEl = document.getElementById('screen-app');
-  appEl.classList.remove('visible');
-  const loginEl = document.getElementById('screen-login');
-  loginEl.classList.remove('hidden');
-  // Reset to home tab
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
-  document.getElementById('t-home').classList.add('on');
-  document.querySelectorAll('.bn').forEach(x=>{ x.classList.remove('on'); x.style.color=''; x.querySelector('svg').style.stroke=''; });
-  document.querySelector('.bn[data-t="home"]').classList.add('on');
-}
-
-/* ──────────────────────────────────────────
-   APP INIT
-────────────────────────────────────────── */
-function initApp(){
-  const u = USERS[CU];
-  // Apply theme
-  document.getElementById('screen-app').className = 'visible' + (CU==='gleici' ? ' g-mode' : '');
-  // Topbar
-  document.getElementById('chip-dot').className = 'user-chip-dot ' + u.color;
-  document.getElementById('chip-name').textContent = u.name;
-  // Add btn color
-  document.getElementById('add-btn').className = 'btn btn-accent';
-  // Datalist
-  updateDL();
-  // Quote
-  const q = QUOTES[new Date().getDay() % QUOTES.length];
-  document.getElementById('q-text').textContent = q.t;
-  document.getElementById('q-auth').textContent = '— ' + q.a;
-  // Render
-  renderHome();
-  updatePip();
-  renderNotifBadge();
-}
-
-function goTab(t, el){
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
-  document.querySelectorAll('.bn').forEach(x=>{ x.classList.remove('on'); x.style.color=''; x.querySelector('svg').style.stroke=''; });
-  document.getElementById('t-'+t).classList.add('on');
-  el.classList.add('on');
-  el.style.color = 'var(--accent)';
-  el.querySelector('svg').style.stroke = 'var(--accent)';
-  if(t==='home')  renderHome();
-  if(t==='mat')   renderMat();
-  if(t==='quiz')  renderQuizList();
-  if(t==='metas') renderMetas();
-}
-
-/* ──────────────────────────────────────────
-   HOME
-────────────────────────────────────────── */
-function renderHome(){
-  const u = USERS[CU];
-  const h = new Date().getHours();
-  const greet = h<12 ? 'Bom dia' : h<18 ? 'Boa tarde' : 'Boa noite';
-  document.getElementById('h-greeting').textContent = greet + ', ' + u.name + '.';
-  document.getElementById('h-sub').textContent = u.profile + ' · ' + new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
-
-  const my = getSess(CU);
-
-  // Stats
-  let totalMin=0, totalC=0, totalT=0;
-  my.forEach(s=>{ totalMin+=(s.h||0)*60+(s.m||0); if(s.qDone){totalC+=s.qC||0;totalT+=s.qT||0;} });
-  const hrs=Math.floor(totalMin/60), mins=totalMin%60;
-  document.getElementById('s-h').textContent = hrs+'h'+(mins?mins+'m':'');
-  document.getElementById('s-c').textContent = totalC;
-  document.getElementById('s-p').textContent = totalT ? Math.round(totalC/totalT*100)+'%' : '—';
-  const sm = buildSM(my);
-  document.getElementById('s-s').textContent = Object.keys(sm).length;
-
-  // Streak
-  const st = streak(my);
-  document.getElementById('streak-n').textContent = st + (st===1?' dia':' dias');
-  document.getElementById('streak-msg').textContent = st===0?'Comece sua sequência hoje': st<3?'Continue, você está no caminho!': st<7?`Incrível — ${st} dias seguidos!`: `Lendário — ${st} dias!`;
-  document.getElementById('streak-icon').textContent = st>=7?'🏆':st>=3?'🔥':'🌱';
-
-  // Duel
-  let mPts=0, gPts=0;
-  getSess('manasses').forEach(s=>{ if(s.qDone) mPts+=s.qC||0; });
-  getSess('gleici').forEach(s=>{ if(s.qDone) gPts+=s.qC||0; });
-  document.getElementById('d-m').textContent = mPts;
-  document.getElementById('d-g').textContent = gPts;
-  const tot = mPts+gPts||1;
-  document.getElementById('db-m').style.width = (mPts/tot*100)+'%';
-  document.getElementById('db-g').style.width = (gPts/tot*100)+'%';
-  document.getElementById('d-m-crown').textContent = mPts>gPts?'👑':'';
-  document.getElementById('d-g-crown').textContent = gPts>mPts?'👑':'';
-  document.getElementById('duel-cap').textContent = mPts>gPts?`Manassés à frente por ${mPts-gPts} ponto${mPts-gPts!==1?'s':''}`:gPts>mPts?`Gleici à frente por ${gPts-mPts} ponto${gPts-mPts!==1?'s':''}`: 'Empate técnico';
-
-  // Comparison bars
-  let mQ=0,gQ=0;
-  getSess('manasses').forEach(s=>{ if(s.questions) mQ+=s.questions.length; });
-  getSess('gleici').forEach(s=>{ if(s.questions) gQ+=s.questions.length; });
-  const maxQ = Math.max(mQ,gQ,1);
-  document.getElementById('pm-bar').style.width = (mQ/maxQ*100)+'%';
-  document.getElementById('pg-bar').style.width = (gQ/maxQ*100)+'%';
-  document.getElementById('pm-v').textContent = mQ+' questões';
-  document.getElementById('pg-v').textContent = gQ+' questões';
-
-  // Week bars
-  renderWeekBars(my);
-  renderHmap(my);
-  renderAch(my,sm);
-  renderRecent(my);
-}
-
-function renderWeekBars(sessions){
-  const days=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  const today=new Date();
-  const data=[];
-  for(let i=6;i>=0;i--){
-    const d=new Date(today); d.setDate(d.getDate()-i);
-    const key=d.toISOString().slice(0,10);
-    const mins=sessions.filter(s=>s.date===key).reduce((a,b)=>a+(b.h||0)*60+(b.m||0),0);
-    data.push({day:days[d.getDay()],mins});
-  }
-  const maxM=Math.max(...data.map(x=>x.mins),1);
-  document.getElementById('week-bars').innerHTML=data.map(d=>`
-    <div class="wb-col">
-      <div class="wb-bar ${d.mins>0?'has-data':''}" style="height:${d.mins?Math.max(d.mins/maxM*54,4):4}px"></div>
-      <div class="wb-day">${d.day}</div>
-    </div>`).join('');
-}
-
-function renderHmap(sessions){
-  const dayMap={};
-  sessions.forEach(s=>{ const m=(s.h||0)*60+(s.m||0); dayMap[s.date]=(dayMap[s.date]||0)+m; });
-  const today=new Date(); let html='';
-  for(let i=27;i>=0;i--){
-    const d=new Date(today); d.setDate(d.getDate()-i);
-    const key=d.toISOString().slice(0,10);
-    const m=dayMap[key]||0;
-    const lv=m===0?'':m<30?'l1':m<60?'l2':m<120?'l3':'l4';
-    html+=`<div class="hm ${lv}" title="${key}"></div>`;
-  }
-  document.getElementById('hmap').innerHTML=html;
-}
-
-function renderAch(sessions,sm){
-  document.getElementById('ach-row').innerHTML=ACH.map(a=>{
-    const on=a.ok(sessions,sm);
-    return `<div class="ach ${on?'on':'off'}"><div class="ach-ic">${a.icon}</div><div class="ach-nm">${a.name}</div></div>`;
-  }).join('');
-}
-
-function renderRecent(sessions){
-  const c=document.getElementById('recent-list');
-  if(!sessions.length){ c.innerHTML='<div class="empty" style="padding:16px"><p>Nenhuma sessão ainda.</p></div>'; return; }
-  c.innerHTML=[...sessions].reverse().slice(0,5).map(s=>sessHTML(s)).join('');
-}
-
-function sessHTML(s){
-  return `<div class="sess">
-    <div class="sess-top"><div class="sess-subj">${s.subject}</div><div class="sess-date">${s.dayLabel}</div></div>
-    <div class="sess-preview">${s.body}</div>
-    <div class="chips">
-      <span class="chip">${(s.h||0)}h${(s.m||0)?s.m+'m':''}</span>
-      <span class="chip">${s.diff==='facil'?'Fácil':s.diff==='medio'?'Médio':'Difícil'}</span>
-      ${s.qDone?`<span class="chip ok">✓ ${s.qC}/${s.qT} acertos</span>`:'<span class="chip warn">Quiz pendente</span>'}
-    </div>
-  </div>`;
-}
-
-/* ──────────────────────────────────────────
-   MATÉRIAS
-────────────────────────────────────────── */
-function buildSM(sessions){ const m={}; sessions.forEach(s=>{ if(!m[s.subject])m[s.subject]=[]; m[s.subject].push(s); }); return m; }
-
-function renderMat(){
-  const u=USERS[CU];
-  document.getElementById('mat-sub').textContent=u.name+' · '+u.profile;
-  applyMatFilter();
-}
-
-function fSubj(f,el){
-  sFilter=f;
-  document.querySelectorAll('#t-mat .f-tag').forEach(x=>x.classList.remove('on'));
-  el.classList.add('on');
-  applyMatFilter();
-}
-
-function applyMatFilter(){
-  const sm=buildSM(getSess(CU));
-  const subjects=Object.keys(sm);
-  const list=document.getElementById('subj-list');
-  if(!subjects.length){ list.innerHTML='<div class="empty"><h3>Nenhuma matéria</h3><p>Adicione sua primeira sessão de estudos</p></div>'; return; }
-
-  const filtered=subjects.filter(subj=>{
-    const done=sm[subj].filter(x=>x.qDone);
-    const pct=done.length?done.reduce((a,b)=>a+(b.qC||0),0)/done.reduce((a,b)=>a+(b.qT||0),0)*100:null;
-    if(sFilter==='all') return true;
-    if(sFilter==='ok')  return pct!==null && pct>=70;
-    if(sFilter==='mid') return pct!==null && pct>=40 && pct<70;
-    if(sFilter==='low') return pct!==null && pct<40;
-    return true;
-  });
-
-  if(!filtered.length){ list.innerHTML='<div class="empty" style="padding:24px"><p>Nenhuma matéria nessa categoria</p></div>'; return; }
-
-  list.innerHTML=filtered.map((subj,i)=>{
-    const s=sm[subj];
-    const color=COLORS[i%COLORS.length];
-    const init=subj.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const totalMin=s.reduce((a,b)=>a+(b.h||0)*60+(b.m||0),0);
-    const hrs=Math.floor(totalMin/60), mins=totalMin%60;
-    const done=s.filter(x=>x.qDone);
-    const pct=done.length?Math.round(done.reduce((a,b)=>a+(b.qC||0),0)/done.reduce((a,b)=>a+(b.qT||0),0)*100):null;
-    const pctColor=pct===null?'var(--ink3)':pct>=70?'var(--ok)':pct>=40?'var(--warn)':'var(--err)';
-    return `<div class="subj-card" onclick="openMat(${JSON.stringify(subj)},${JSON.stringify(color)})">
-      <div class="subj-ic" style="background:${color}18;color:${color}">${init}</div>
-      <div class="subj-info">
-        <div class="subj-name">${subj}</div>
-        <div class="subj-meta">${s.length} dia${s.length!==1?'s':''} · ${hrs}h${mins?mins+'m':''}</div>
-        <div class="subj-mini-bar"><div class="subj-mini-fill" style="width:${pct||0}%;background:${color}"></div></div>
-      </div>
-      <div class="subj-pct" style="color:${pctColor}">${pct!==null?pct+'%':'—'}</div>
-      <div class="subj-chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
-    </div>`;
-  }).join('');
-}
-
-function openMat(subject,color){
-  const sessions=getSess(CU).filter(s=>s.subject===subject);
-  document.getElementById('v-mat-list').style.display='none';
-  document.getElementById('v-mat-detail').style.display='block';
-  const done=sessions.filter(x=>x.qDone);
-  const pct=done.length?Math.round(done.reduce((a,b)=>a+(b.qC||0),0)/done.reduce((a,b)=>a+(b.qT||0),0)*100):null;
-  document.getElementById('mat-detail').innerHTML=`
-    <p class="page-title" style="color:${color}">${subject}</p>
-    <p class="page-sub">${sessions.length} dia${sessions.length!==1?'s':''} de estudo${pct!==null?' · '+pct+'% de aproveitamento':''}</p>
-    ${pct!==null?`<div class="card"><div class="prog-head"><span>Aproveitamento geral</span><span style="color:${pct>=70?'var(--ok)':pct>=40?'var(--warn)':'var(--err)'}">${pct}%</span></div><div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${color}"></div></div></div>`:''}
-    ${sessions.map((s,i)=>`
-      <div class="card" style="border-left:3px solid ${color}">
-        <div class="card-label">Dia ${i+1} de estudo — ${s.dayLabel}</div>
-        <p style="font-size:14px;line-height:1.7;color:var(--ink2);margin-bottom:12px">${s.body}</p>
-        ${s.obs?`<p style="font-size:13px;color:var(--ink3);font-style:italic;margin-bottom:12px">Obs: ${s.obs}</p>`:''}
-        <div class="chips">
-          <span class="chip">${(s.h||0)}h${(s.m||0)?s.m+'m':''}</span>
-          <span class="chip">${s.diff==='facil'?'Fácil':s.diff==='medio'?'Médio':'Difícil'}</span>
-          ${s.qDone?`<span class="chip ok">✓ ${s.qC}/${s.qT}</span>`:'<span class="chip warn">Quiz pendente</span>'}
-        </div>
-      </div>`).join('')}`;
-}
-
-function backMat(){
-  document.getElementById('v-mat-list').style.display='block';
-  document.getElementById('v-mat-detail').style.display='none';
-}
-
-/* ──────────────────────────────────────────
-   ADD SESSION
-────────────────────────────────────────── */
-function updateDL(){
-  const subjects=[...new Set(getSess(CU).map(s=>s.subject))];
-  document.getElementById('f-subj-dl').innerHTML=subjects.map(s=>`<option value="${s}">`).join('');
-}
-
-function updateCC(){
-  const v=document.getElementById('f-body').value;
-  const el=document.getElementById('cc');
-  el.textContent=v.length;
-  el.style.color=v.length<50?'var(--err)':v.length<100?'var(--warn)':'var(--ok)';
-}
-
-function pickDiff(d){
-  selDiff=d;
-  document.querySelectorAll('.diff-opt').forEach(b=>{b.className='diff-opt';});
-  const map={facil:'d-ok',medio:'d-warn',dificil:'d-err'};
-  document.querySelector(`.diff-opt[data-d="${d}"]`).classList.add(map[d]);
-}
-
-async function addSession(){
-  const subj=document.getElementById('f-subj').value.trim();
-  const body=document.getElementById('f-body').value.trim();
-  let h=parseInt(document.getElementById('f-h').value)||0;
-  let m=parseInt(document.getElementById('f-m').value)||0;
-  const nq=parseInt(document.getElementById('f-nq').value)||5;
-  const obs=document.getElementById('f-obs').value.trim();
-
-  if(timerSec>0 && h===0 && m===0){ h=Math.floor(timerSec/3600); m=Math.floor((timerSec%3600)/60); }
-
-  if(!subj){ toast('Informe a matéria'); return; }
-  if(body.length<30){ toast('Descreva com pelo menos 30 caracteres'); return; }
-
-  const btn=document.getElementById('add-btn');
-  btn.disabled=true;
-  btn.textContent='Gerando questões...';
-
-  try {
-    const qs=await genQ(subj,body,nq,selDiff);
-    const existing=getSess(CU).filter(s=>s.subject===subj);
-    const now=new Date();
-    const sess={
-      id:Date.now().toString(), subject:subj, body, h, m, obs, diff:selDiff,
-      date:now.toISOString().slice(0,10),
-      dayLabel:now.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'}),
-      dayNum:existing.length+1,
-      questions:qs, qDone:false, qC:0, qT:qs.length
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef, Component } = React;
+
+    // ============================================================
+    // ⚠️ CHAVES CONFIGURADAS ⚠️
+    // ============================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyCC1jE63rpMAu_5rfCe5IVhB_ysYCo1bd0",
+      authDomain: "ab-advocacia.firebaseapp.com",
+      projectId: "ab-advocacia",
+      storageBucket: "ab-advocacia.firebasestorage.app",
+      messagingSenderId: "662748092004",
+      appId: "1:662748092004:web:c62513a867eb486ac6b171",
+      measurementId: "G-9380LF0TYF"
     };
-    pushSess(CU,sess);
-    updateDL();
-    pushNotif(CU,`Sessão "${subj}" salva com ${qs.length} questões.`);
-    renderNotifBadge();
-    timerReset();
-    document.getElementById('f-subj').value='';
-    document.getElementById('f-body').value='';
-    document.getElementById('f-h').value='0';
-    document.getElementById('f-m').value='0';
-    document.getElementById('f-obs').value='';
-    updateCC();
-    toast('Sessão salva com sucesso!');
-    updatePip();
-    setTimeout(()=>{
-      goTab('quiz',document.querySelector('.bn[data-t="quiz"]'));
-      renderQuizList();
-      openQuiz(sess);
-    },1000);
-  } catch(e) {
-    toast('Erro ao gerar questões. Tente novamente.');
-    console.error(e);
-  }
-  btn.disabled=false;
-  btn.textContent='Salvar e gerar questões';
-}
+    // ============================================================
 
-/* ──────────────────────────────────────────
-   AI GENERATION (Integrado com Google Gemini)
-────────────────────────────────────────── */
-async function genQ(subject,body,nq,diff){
-  const u=USERS[CU];
-  const dMap={facil:'básicas e conceituais, diretas, de fixação',medio:'de aplicação e análise, com alternativas plausíveis que exigem compreensão',dificil:'avançadas, com situações-problema complexas, distratores muito elaborados e pegadinhas técnicas'};
-  const prompt=`Você é um especialista em elaboração de questões de concurso e vestibular no Brasil.
+    // Inicialização do Firebase
+    if (!firebase.apps.length) {
+      try { firebase.initializeApp(firebaseConfig); } catch (e) { console.error(e); }
+    }
+    
+    const db = firebase.firestore();
+    const auth = firebase.auth();
 
-Perfil do aluno: ${u.name} — ${u.profile}
-Orientação específica: ${u.focus}
-Matéria: ${subject}
-Nível de dificuldade: ${diff} (${dMap[diff]})
+    // --- ÍCONES ---
+    const Icons = {
+      Plus: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>,
+      Trash: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>,
+      Scale: () => <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>,
+      LogOut: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>,
+      History: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+      Search: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
+      Target: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
+      TrendUp: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
+      Key: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>,
+      Excel: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+      Eye: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>,
+      EyeOff: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>,
+      Clock: () => <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+      Check: () => <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>,
+      Users: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+    };
 
-Conteúdo estudado:
-"""
-${body}
-"""
+    // --- GRÁFICOS ---
+    const FinanceChart = ({ data, type }) => {
+      const canvasRef = useRef(null);
+      const chartInstance = useRef(null);
 
-Crie exatamente ${nq} questões de múltipla escolha com 4 alternativas (A, B, C, D).
-- Baseie-se EXCLUSIVAMENTE no conteúdo acima
-- Varie a posição da resposta correta (0, 1, 2 ou 3)
-- Cada explicação: 2-4 frases ensinando o conceito
-- Questões progressivas em complexidade
+      useEffect(() => {
+        if (!canvasRef.current || !window.Chart) return;
+        if (chartInstance.current) chartInstance.current.destroy();
 
-RESPONDA APENAS com JSON puro e válido:
-{"questions":[{"question":"enunciado","options":["A) texto","B) texto","C) texto","D) texto"],"answer":0,"explanation":"explicação didática"}]}`;
+        try {
+          const ctx = canvasRef.current.getContext('2d');
+          const config = type === 'bar' ? {
+            type: 'bar',
+            data: {
+              labels: ['Receita', 'Despesa', 'Líquido'],
+              datasets: [{
+                label: 'R$',
+                data: [data.receita, data.despesa, data.liquido],
+                backgroundColor: ['#10b981', '#ef4444', '#1e293b'],
+                borderRadius: 4
+              }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+          } : {
+            type: 'doughnut',
+            data: {
+              labels: ['Evison', 'Adiellyson', 'Escritório'],
+              datasets: [{
+                data: [data.graficoPizza[0].value, data.graficoPizza[1].value, data.graficoPizza[2].value],
+                backgroundColor: ['#1e293b', '#b49b67', '#94a3b8'],
+                borderWidth: 0
+              }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+          };
+          chartInstance.current = new Chart(ctx, config);
+        } catch (err) { console.error(err); }
+        return () => { if (chartInstance.current) chartInstance.current.destroy(); };
+      }, [data, type]);
 
-  // Sua chave de API do Google AI Studio
-  const GEMINI_API_KEY = 'AIzaSyDa7d0wTium4xJeck1XUi9U2k7JfmsiTqI'; 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+      return <canvas ref={canvasRef} />;
+    };
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{
-        parts: [{ text: prompt }]
-      }],
-      generationConfig: {
-        // Força a IA a devolver estritamente um JSON válido, evitando erros no código
-        response_mime_type: "application/json" 
+    // --- LOGIN ---
+    const LoginScreen = ({ onLogin }) => {
+      const [user, setUser] = useState("");
+      const [pass, setPass] = useState("");
+      const [error, setError] = useState("");
+      const [loading, setLoading] = useState(false);
+
+      const handle = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError("");
+
+        // 1. CHECAGEM MESTRE SUPREMA
+        if (user === "NB ADVOCACIA" && pass === "NB07242530") {
+          onLogin(user, "master");
+          return;
+        }
+
+        // 2. CHECAGEM BANCO DE DADOS
+        if (db) {
+          try {
+            const docRef = db.collection('credenciais_advocacia').doc(user);
+            const docSnap = await docRef.get();
+            
+            if (docSnap.exists) {
+              const data = docSnap.data();
+              if (data.senha === pass) {
+                // Login sucesso com role do banco
+                onLogin(user, data.role || 'viewer'); // Default para viewer se não tiver role
+                return;
+              } else {
+                setError("Senha incorreta.");
+              }
+            } else {
+              setError("Usuário não cadastrado pelo Administrador.");
+            }
+          } catch (err) {
+            console.error(err);
+            setError("Erro de conexão. Tente novamente.");
+          }
+        }
+        setLoading(false);
+      };
+
+      return (
+        <div className="min-h-screen bg-navy flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white rounded-xl shadow-2xl p-8 fade-in">
+            <div className="text-center mb-6">
+              <div className="text-gold flex justify-center mb-2"><Icons.Scale /></div>
+              <h2 className="text-2xl font-bold text-slate-800">NASCIMENTO & BOMFIM</h2>
+              <p className="text-xs text-slate-500 uppercase tracking-widest">Área Restrita</p>
+            </div>
+            <form onSubmit={handle} className="space-y-4">
+              <input className="w-full p-3 border rounded outline-none focus:border-gold" placeholder="Nome do Usuário" value={user} onChange={e => setUser(e.target.value)} />
+              <input type="password" className="w-full p-3 border rounded outline-none focus:border-gold" placeholder="Senha" value={pass} onChange={e => setPass(e.target.value)} />
+              {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+              <button disabled={loading} className="w-full bg-navy text-white py-3 rounded font-bold hover:bg-slate-800 transition">
+                {loading ? 'A VERIFICAR...' : 'ENTRAR'}
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+    };
+
+    // --- APP PRINCIPAL ---
+    const AppContent = () => {
+      const [authOk, setAuthOk] = useState(false);
+      const [socio, setSocio] = useState("");
+      const [nomeCompleto, setNomeCompleto] = useState("");
+      const [userRole, setUserRole] = useState("viewer"); // master, admin, viewer
+      const [transacoes, setTransacoes] = useState([]);
+      const [logs, setLogs] = useState([]);
+      const [modal, setModal] = useState(false);
+      const [modalSenha, setModalSenha] = useState(false);
+      const [novaSenha, setNovaSenha] = useState("");
+      const [aba, setAba] = useState('dash');
+      const [novo, setNovo] = useState({ data: new Date().toISOString().split('T')[0], tipo: 'entrada', valor: '', descricao: '', categoria: 'Honorários Contratuais', responsavel: 'Escritório', status: 'pago' });
+      const [privacidade, setPrivacidade] = useState(false);
+      const [metaMensal, setMetaMensal] = useState(50000); 
+      const [busca, setBusca] = useState("");
+
+      // ESTADO GESTÃO DE USUÁRIOS (APENAS MESTRE)
+      const [listaUsuarios, setListaUsuarios] = useState([]);
+      const [novoUsuario, setNovoUsuario] = useState({ nome: "", senha: "", role: "viewer" });
+
+      const registrarLog = async (acao, detalhe) => {
+        if (!db) return;
+        try {
+          await db.collection('auditoria_advocacia').add({
+            data: new Date().toISOString(),
+            usuario: nomeCompleto || socio,
+            acao: acao,
+            detalhe: detalhe
+          });
+        } catch (e) { console.error("Erro log:", e); }
+      };
+
+      const handleLogin = (nomeFull, role) => {
+        const primeiroNome = nomeFull.split(' ')[0];
+        setSocio(primeiroNome);
+        setNomeCompleto(nomeFull);
+        setUserRole(role);
+        setNovo(p => ({...p, responsavel: primeiroNome !== 'NB' ? primeiroNome : 'Escritório'}));
+        setAuthOk(true);
+        setTimeout(() => { if(auth.currentUser) registrarLog("LOGIN", `Acesso como ${role.toUpperCase()}`); }, 1500);
+      };
+
+      const handleLogout = async () => {
+        await registrarLog("LOGOUT", "Saída do sistema.");
+        window.location.reload();
+      };
+
+      // --- FUNÇÕES DE USUÁRIO (MESTRE) ---
+      const carregarUsuarios = async () => {
+        if (!db || userRole !== 'master') return;
+        const snap = await db.collection('credenciais_advocacia').get();
+        const users = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setListaUsuarios(users);
+      };
+
+      const salvarUsuario = async () => {
+        if (!db || userRole !== 'master') return;
+        if (!novoUsuario.nome || !novoUsuario.senha) return alert("Preencha nome e senha.");
+        
+        try {
+            await db.collection('credenciais_advocacia').doc(novoUsuario.nome).set({
+                senha: novoUsuario.senha,
+                role: novoUsuario.role
+            });
+            alert("Usuário salvo com sucesso!");
+            setNovoUsuario({ nome: "", senha: "", role: "viewer" });
+            carregarUsuarios();
+            registrarLog("GESTÃO USUÁRIO", `Criou/Editou usuário: ${novoUsuario.nome} como ${novoUsuario.role}`);
+        } catch (e) { alert("Erro ao salvar usuário."); }
+      };
+
+      const excluirUsuario = async (id) => {
+          if (!confirm("Tem certeza que deseja remover este usuário?")) return;
+          try {
+              await db.collection('credenciais_advocacia').doc(id).delete();
+              carregarUsuarios();
+              registrarLog("GESTÃO USUÁRIO", `Removeu usuário: ${id}`);
+          } catch(e) { alert("Erro ao excluir."); }
+      };
+
+      useEffect(() => {
+        if (aba === 'usuarios') carregarUsuarios();
+      }, [aba]);
+      // ------------------------------------
+
+      const alterarSenha = async () => {
+        if (userRole === 'master') {
+            alert("A senha mestre não pode ser alterada por aqui.");
+            return;
+        }
+        if (!novaSenha || novaSenha.length < 4) {
+          alert("A senha deve ter pelo menos 4 caracteres.");
+          return;
+        }
+        try {
+          await db.collection('credenciais_advocacia').doc(nomeCompleto).set({ senha: novaSenha }, { merge: true });
+          await registrarLog("SEGURANÇA", "Alterou a própria senha.");
+          alert("Senha alterada com sucesso!");
+          setModalSenha(false);
+          setNovaSenha("");
+        } catch (e) { alert("Erro: " + e.message); }
+      };
+
+      const exportarExcel = () => {
+        try {
+          if (!window.XLSX) { alert("Erro ao carregar biblioteca Excel."); return; }
+          const dadosFormatados = transacoes.map(t => ({
+            "Data": new Date(t.data).toLocaleDateString('pt-BR'),
+            "Tipo": t.tipo === 'entrada' ? 'Receita' : 'Despesa',
+            "Status": t.status === 'pendente' ? 'PENDENTE' : 'PAGO',
+            "Descrição": t.descricao,
+            "Categoria": t.categoria,
+            "Valor (R$)": t.valor,
+            "Responsável": t.responsavel
+          }));
+          const worksheet = XLSX.utils.json_to_sheet(dadosFormatados);
+          const workbook = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(workbook, worksheet, "Fluxo Financeiro");
+          XLSX.writeFile(workbook, `Backup_NB_${new Date().toISOString().split('T')[0]}.xlsx`);
+          registrarLog("BACKUP", "Realizou backup Excel.");
+        } catch (error) { alert("Erro ao exportar."); }
+      };
+
+      useEffect(() => {
+        if (!authOk) return;
+        auth.signInAnonymously().catch(console.error);
+      }, [authOk]);
+
+      useEffect(() => {
+        if (!authOk) return;
+        const unsub = db.collection('financeiro_advocacia').orderBy('criadoEm', 'desc').onSnapshot(snap => {
+          const d = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          d.sort((a,b) => new Date(b.data) - new Date(a.data));
+          setTransacoes(d);
+        });
+        return () => unsub();
+      }, [authOk]);
+
+      useEffect(() => {
+        if (!authOk || aba !== 'auditoria') return;
+        const unsub = db.collection('auditoria_advocacia').orderBy('data', 'desc').limit(50).onSnapshot(snap => {
+          const l = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setLogs(l);
+        });
+        return () => unsub();
+      }, [authOk, aba]);
+
+      const metricas = useMemo(() => {
+        let rec = 0, desp = 0, cust = 0;
+        let pSocio = { 'Evison': 0, 'Adiellyson': 0, 'Escritório': 0 };
+        let porCategoria = {};
+        
+        const hoje = new Date();
+        const mesAtualStr = hoje.toISOString().slice(0, 7);
+        const transacoesMes = transacoes.filter(t => t.data.startsWith(mesAtualStr));
+
+        transacoesMes.forEach(t => {
+          const v = parseFloat(t.valor || 0);
+          if (t.status === 'pendente' && t.categoria !== 'Repasse Cliente') return;
+
+          const resp = t.responsavel || 'Escritório';
+          if (!porCategoria[t.categoria]) porCategoria[t.categoria] = { val: 0, tipo: t.tipo };
+          porCategoria[t.categoria].val += v;
+
+          if (t.categoria === 'Repasse Cliente') {
+            t.tipo === 'entrada' ? cust += v : cust -= v;
+          } else {
+            if (t.tipo === 'entrada') {
+              rec += v;
+              if (pSocio[resp] !== undefined) pSocio[resp] += v;
+              else pSocio['Escritório'] += v;
+            } else {
+              desp += v;
+            }
+          }
+        });
+
+        const ranking = Object.keys(porCategoria)
+          .map(k => ({ cat: k, ...porCategoria[k] }))
+          .sort((a,b) => b.val - a.val)
+          .slice(0, 5);
+
+        const diasNoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate();
+        const mediaDiaria = hoje.getDate() > 0 ? rec / hoje.getDate() : 0;
+        const projecao = mediaDiaria * diasNoMes;
+        const margem = rec > 0 ? ((rec - desp) / rec) * 100 : 0;
+        
+        let saude = { cor: "text-red-600", texto: "Crítico", bg: "bg-red-100" };
+        if (margem > 30) saude = { cor: "text-emerald-600", texto: "Excelente", bg: "bg-emerald-100" };
+        else if (margem > 10) saude = { cor: "text-yellow-600", texto: "Atenção", bg: "bg-yellow-100" };
+
+        return { rec, desp, liq: rec - desp, cust, pSocio, projecao, saude, ranking };
+      }, [transacoes]);
+
+      const transacoesExibidas = useMemo(() => {
+        if (!busca) return transacoes;
+        const lowerBusca = busca.toLowerCase();
+        return transacoes.filter(t => 
+          t.descricao.toLowerCase().includes(lowerBusca) || 
+          t.categoria.toLowerCase().includes(lowerBusca) ||
+          t.responsavel.toLowerCase().includes(lowerBusca) ||
+          t.valor.toString().includes(lowerBusca)
+        );
+      }, [transacoes, busca]);
+
+      const salvar = async () => {
+        if (!novo.valor) return;
+        // Permissão: Apenas Admin ou Master
+        if (userRole === 'viewer') return alert("Você não tem permissão para adicionar lançamentos.");
+
+        try {
+          await db.collection('financeiro_advocacia').add({
+            ...novo, valor: parseFloat(novo.valor), criadoEm: new Date().toISOString()
+          });
+          await registrarLog("LANÇAMENTO", `Adicionou: ${novo.tipo} de R$ ${novo.valor}`);
+          setModal(false);
+          setNovo({ ...novo, valor: '', descricao: '' });
+        } catch (e) { alert("Erro ao salvar: " + e.message); }
+      };
+
+      const apagar = async (t) => {
+        // Permissão: Apenas Admin ou Master
+        if (userRole === 'viewer') return alert("Você não tem permissão para excluir.");
+
+        if (confirm("Deseja apagar este lançamento?")) {
+          await db.collection('financeiro_advocacia').doc(t.id).delete();
+          await registrarLog("EXCLUSÃO", `Apagou: ${t.descricao} de R$ ${t.valor}`);
+        }
+      };
+      
+      const limparAuditoria = async () => {
+          if (userRole !== 'master') return alert("Apenas a senha Mestre pode limpar a auditoria.");
+          if (!confirm("ATENÇÃO: Isso apagará todo o histórico de logs. Confirma?")) return;
+          
+          const batch = db.batch();
+          const snap = await db.collection('auditoria_advocacia').get();
+          snap.forEach(doc => batch.delete(doc.ref));
+          await batch.commit();
+          registrarLog("LIMPEZA", "Histórico de auditoria apagado pelo Mestre.");
+          alert("Auditoria limpa.");
+      };
+
+      const fmt = (v) => {
+        if (privacidade) return "R$ •••••";
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+      };
+      
+      const fmtData = (d) => new Date(d).toLocaleDateString('pt-BR');
+      const fmtHora = (d) => new Date(d).toLocaleString('pt-BR');
+
+      if (!authOk) return <LoginScreen onLogin={handleLogin} />;
+
+      const dataBar = { receita: metricas.rec, despesa: metricas.desp, liquido: metricas.liq };
+      const dataPie = { graficoPizza: [{ value: metricas.pSocio['Evison'] }, { value: metricas.pSocio['Adiellyson'] }, { value: metricas.pSocio['Escritório'] }] };
+
+      return (
+        <div className="min-h-screen pb-20 fade-in">
+          <header className="bg-white border-b px-6 py-4 sticky top-0 z-30 flex justify-between items-center shadow-sm">
+            <div className="flex items-center gap-3">
+               <div className="text-gold"><Icons.Scale /></div>
+               <div>
+                 <h1 className="text-xl font-serif font-bold text-slate-900 leading-none">NASCIMENTO & BOMFIM</h1>
+                 <span className="text-xs font-bold text-gold tracking-widest uppercase flex items-center gap-1">
+                    Olá, {socio} 
+                    <span className={`px-1 rounded text-[10px] uppercase ${userRole==='master'?'tag-master':userRole==='admin'?'tag-admin':'tag-viewer'}`}>{userRole}</span>
+                 </span>
+               </div>
+            </div>
+            <div className="flex gap-2 items-center">
+              <button onClick={() => setPrivacidade(!privacidade)} className="p-2 text-slate-400 hover:text-navy" title="Ocultar Valores">
+                {privacidade ? <Icons.EyeOff/> : <Icons.Eye/>}
+              </button>
+              <div className="h-6 w-px bg-slate-200 mx-1"></div>
+              <button onClick={() => setAba('dash')} className={`px-3 py-1 text-sm rounded font-bold transition ${aba==='dash'?'bg-navy text-white':'text-slate-500 hover:bg-slate-100'}`}>Dashboard</button>
+              <button onClick={() => setAba('extrato')} className={`px-3 py-1 text-sm rounded font-bold transition ${aba==='extrato'?'bg-navy text-white':'text-slate-500 hover:bg-slate-100'}`}>Extrato</button>
+              <button onClick={() => setAba('auditoria')} className={`px-3 py-1 text-sm rounded font-bold transition flex items-center gap-1 ${aba==='auditoria'?'bg-navy text-white':'text-slate-500 hover:bg-slate-100'}`}><Icons.History/> Audit</button>
+              
+              {userRole === 'master' && (
+                <button onClick={() => setAba('usuarios')} className={`px-3 py-1 text-sm rounded font-bold transition flex items-center gap-1 ${aba==='usuarios'?'bg-navy text-white':'text-slate-500 hover:bg-slate-100'}`}><Icons.Users/> Equipe</button>
+              )}
+
+              {userRole !== 'master' && (
+                  <button onClick={() => setModalSenha(true)} className="p-2 text-slate-400 hover:text-gold" title="Alterar Senha"><Icons.Key/></button>
+              )}
+              
+              {(userRole === 'admin' || userRole === 'master') && (
+                <button onClick={() => setModal(true)} className="bg-gold text-white px-3 py-1 rounded text-sm font-bold hover:bg-yellow-600 flex gap-1 items-center shadow"><Icons.Plus/> Novo</button>
+              )}
+              
+              <button onClick={handleLogout} className="p-1 text-slate-400 hover:text-red-500" title="Sair"><Icons.LogOut/></button>
+            </div>
+          </header>
+
+          <main className="max-w-7xl mx-auto px-6 py-8 space-y-6">
+            
+            {/* PAINEL DE GESTÃO DE USUÁRIOS (SÓ MESTRE) */}
+            {aba === 'usuarios' && userRole === 'master' && (
+                 <div className="bg-white rounded-xl shadow-sm overflow-hidden fade-in print-break p-6">
+                    <h3 className="font-bold text-slate-700 mb-4 flex gap-2 items-center"><Icons.Users/> Gestão da Equipe</h3>
+                    
+                    <div className="bg-slate-50 p-4 rounded-lg mb-6 border border-slate-200">
+                        <h4 className="text-sm font-bold text-slate-600 mb-2">Adicionar / Editar Usuário</h4>
+                        <div className="flex gap-4 items-end">
+                            <div className="flex-1">
+                                <label className="text-xs text-slate-500 block">Nome do Usuário</label>
+                                <input className="w-full p-2 border rounded" placeholder="Ex: Adiellyson Bonfim" value={novoUsuario.nome} onChange={e=>setNovoUsuario({...novoUsuario, nome: e.target.value})} />
+                            </div>
+                            <div className="flex-1">
+                                <label className="text-xs text-slate-500 block">Senha</label>
+                                <input className="w-full p-2 border rounded" type="text" placeholder="Senha" value={novoUsuario.senha} onChange={e=>setNovoUsuario({...novoUsuario, senha: e.target.value})} />
+                            </div>
+                            <div className="w-40">
+                                <label className="text-xs text-slate-500 block">Permissão</label>
+                                <select className="w-full p-2 border rounded bg-white" value={novoUsuario.role} onChange={e=>setNovoUsuario({...novoUsuario, role: e.target.value})}>
+                                    <option value="viewer">Visualizador</option>
+                                    <option value="admin">Administrador</option>
+                                </select>
+                            </div>
+                            <button onClick={salvarUsuario} className="bg-navy text-white px-4 py-2 rounded font-bold hover:bg-slate-800">Salvar</button>
+                        </div>
+                    </div>
+
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-slate-100 text-slate-500 font-bold border-b">
+                            <tr><th className="px-4 py-2">Nome</th><th className="px-4 py-2">Senha</th><th className="px-4 py-2">Permissão</th><th className="px-4 py-2">Ação</th></tr>
+                        </thead>
+                        <tbody className="divide-y">
+                            {listaUsuarios.map(u => (
+                                <tr key={u.id}>
+                                    <td className="px-4 py-3 font-bold text-slate-700">{u.id}</td>
+                                    <td className="px-4 py-3 text-slate-500 font-mono">{u.senha}</td>
+                                    <td className="px-4 py-3">
+                                        <span className={`px-2 py-1 rounded text-xs uppercase font-bold ${u.role==='admin'?'bg-navy text-white':u.role==='master'?'bg-purple-700 text-white':'bg-slate-300 text-slate-700'}`}>{u.role}</span>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <button onClick={()=>excluirUsuario(u.id)} className="text-red-500 hover:text-red-700 font-bold text-xs uppercase">Remover</button>
+                                    </td>
+                                </tr>
+                            ))}
+                            {listaUsuarios.length === 0 && <tr><td colSpan="4" className="text-center py-4 text-slate-400">Nenhum usuário encontrado no banco.</td></tr>}
+                        </tbody>
+                    </table>
+                 </div>
+            )}
+
+            {aba === 'dash' && (
+              <div className="space-y-6 fade-in print-break">
+                {/* Barra de Metas */}
+                <div className="bg-white p-4 rounded-xl shadow-sm">
+                  <div className="flex justify-between items-end mb-2">
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-500 uppercase flex items-center gap-2"><Icons.Target/> Meta do Mês</h3>
+                      <p className="text-2xl font-bold text-navy">{fmt(metricas.rec)} <span className="text-sm text-slate-400 font-normal">/ {fmt(metaMensal)}</span></p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs font-bold text-gold">{Math.min(100, (metricas.rec/metaMensal)*100).toFixed(1)}%</span>
+                    </div>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                    <div className="bg-gold h-3 rounded-full transition-all duration-1000" style={{width: `${Math.min(100, (metricas.rec/metaMensal)*100)}%`}}></div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-white p-5 rounded-xl shadow-sm border-l-4 border-emerald-500">
+                    <p className="text-xs font-bold text-slate-500">FATURAMENTO (MÊS)</p>
+                    <h3 className="text-2xl font-bold text-slate-800">{fmt(metricas.rec)}</h3>
+                  </div>
+                  <div className="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-500">
+                    <p className="text-xs font-bold text-slate-500 flex items-center gap-1"><Icons.TrendUp/> PROJEÇÃO (MÊS)</p>
+                    <h3 className="text-2xl font-bold text-blue-700">{fmt(metricas.projecao)}</h3>
+                  </div>
+                  <div className={`p-5 rounded-xl shadow-sm border-l-4 ${metricas.saude.bg} border-l-${metricas.saude.cor.split('-')[1]}-500`}>
+                    <p className="text-xs font-bold text-slate-500">SAÚDE FINANCEIRA</p>
+                    <h3 className={`text-2xl font-bold ${metricas.saude.cor}`}>{metricas.saude.texto}</h3>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="bg-white p-6 rounded-xl shadow-sm col-span-2 h-80">
+                    <h4 className="font-serif font-bold text-slate-700 mb-4">Fluxo de Caixa (Mês)</h4>
+                    <div className="h-64"><FinanceChart type="bar" data={dataBar} /></div>
+                  </div>
+                  <div className="bg-white p-6 rounded-xl shadow-sm h-80">
+                    <h4 className="font-serif font-bold text-slate-700 mb-4">Top Movimentações</h4>
+                    <div className="space-y-3 overflow-y-auto h-64 pr-2">
+                      {metricas.ranking.map((r, i) => (
+                        <div key={i} className="flex justify-between items-center text-sm border-b pb-2">
+                          <span className="font-medium text-slate-600">{r.cat}</span>
+                          <span className={`font-bold ${r.tipo==='entrada'?'text-emerald-600':'text-red-500'}`}>{fmt(r.val)}</span>
+                        </div>
+                      ))}
+                      {metricas.ranking.length === 0 && <p className="text-slate-400 text-sm text-center pt-10">Sem dados</p>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {aba === 'extrato' && (
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden fade-in print-break">
+                <div className="p-4 border-b flex flex-col md:flex-row justify-between items-center bg-slate-50 gap-4 no-print">
+                  <h3 className="font-bold text-slate-700">Histórico Completo</h3>
+                  <div className="flex gap-2 w-full md:w-auto items-center">
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-2.5 text-slate-400"><Icons.Search/></span>
+                      <input type="text" placeholder="Buscar lançamento..." className="pl-9 pr-4 py-2 border rounded-lg text-sm w-full focus:outline-none focus:border-navy" value={busca} onChange={e => setBusca(e.target.value)} />
+                    </div>
+                    <button onClick={exportarExcel} className="text-xs flex items-center gap-1 bg-white border border-green-600 text-green-700 px-3 py-2 rounded hover:bg-green-50 font-bold transition">
+                      <Icons.Excel/> Backup Excel
+                    </button>
+                  </div>
+                </div>
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-slate-100 text-slate-500 font-bold border-b">
+                    <tr><th className="px-6 py-4">Data</th><th className="px-6 py-4">Descrição</th><th className="px-6 py-4">Status</th><th className="px-6 py-4">Valor</th><th className="px-6 py-4 text-center no-print">Ação</th></tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {transacoesExibidas.map(t => (
+                      <tr key={t.id} className="hover:bg-slate-50">
+                        <td className="px-6 py-4 text-slate-500">{fmtData(t.data)}</td>
+                        <td className="px-6 py-4">
+                          <div className="font-bold text-slate-700">{t.descricao}</div>
+                          <div className="text-xs text-slate-400 uppercase">{t.responsavel} • {t.categoria}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${t.status === 'pendente' ? 'bg-yellow-100 text-yellow-700' : 'bg-slate-100 text-slate-600'}`}>
+                            {t.status === 'pendente' ? <span className="flex items-center gap-1"><Icons.Clock/> Pendente</span> : <span className="flex items-center gap-1"><Icons.Check/> Pago</span>}
+                          </span>
+                        </td>
+                        <td className={`px-6 py-4 font-bold ${t.tipo==='entrada'?'text-emerald-600':'text-red-600'}`}>{t.tipo==='saida'?'-':''} {fmt(t.valor)}</td>
+                        <td className="px-6 py-4 text-center no-print">
+                            {(userRole === 'admin' || userRole === 'master') && (
+                                <button onClick={() => apagar(t)} className="text-slate-300 hover:text-red-600 transition"><Icons.Trash /></button>
+                            )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {aba === 'auditoria' && (
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden fade-in">
+                <div className="p-4 border-b bg-slate-50 flex justify-between items-center">
+                  <h3 className="font-bold text-slate-700 flex items-center gap-2"><Icons.History/> Auditoria</h3>
+                  {userRole === 'master' && (
+                      <button onClick={limparAuditoria} className="text-xs bg-red-100 text-red-600 px-3 py-1 rounded font-bold hover:bg-red-200">LIMPAR TUDO</button>
+                  )}
+                </div>
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-slate-100 text-slate-500 font-bold border-b">
+                    <tr><th className="px-6 py-4">Data/Hora</th><th className="px-6 py-4">Usuário</th><th className="px-6 py-4">Ação</th><th className="px-6 py-4">Detalhes</th></tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {logs.map(l => (
+                      <tr key={l.id} className="hover:bg-slate-50">
+                        <td className="px-6 py-4 text-slate-500 font-mono text-xs">{fmtHora(l.data)}</td>
+                        <td className="px-6 py-4 font-bold text-slate-700">{l.usuario}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded text-xs font-bold ${l.acao==='LOGIN'?'bg-blue-100 text-blue-700':l.acao==='EXCLUSÃO'?'bg-red-100 text-red-700':'bg-slate-100 text-slate-600'}`}>
+                            {l.acao}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-slate-600">{l.detalhe}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </main>
+
+          {/* MODAL LANÇAMENTO */}
+          {modal && (
+            <div className="fixed inset-0 bg-slate-900/50 backdrop-blur flex items-center justify-center z-50 p-4 fade-in no-print">
+              <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4">
+                <h3 className="font-bold text-lg text-slate-800 font-serif">Novo Lançamento</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-500">TIPO</label>
+                    <select className="w-full p-2 border rounded mt-1" value={novo.tipo} onChange={e=>setNovo({...novo, tipo:e.target.value})}>
+                      <option value="entrada">Entrada</option><option value="saida">Saída</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-500">DATA</label>
+                    <input type="date" className="w-full p-2 border rounded mt-1" value={novo.data} onChange={e=>setNovo({...novo, data:e.target.value})}/>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-500">VALOR (R$)</label>
+                  <input type="number" placeholder="0,00" className="w-full p-2 border rounded mt-1 text-lg font-bold" value={novo.valor} onChange={e=>setNovo({...novo, valor:e.target.value})}/>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-500">DESCRIÇÃO</label>
+                  <input type="text" placeholder="Ex: Honorários..." className="w-full p-2 border rounded mt-1" value={novo.descricao} onChange={e=>setNovo({...novo, descricao:e.target.value})}/>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-500">STATUS</label>
+                    <select className="w-full p-2 border rounded mt-1 text-sm bg-slate-50 font-bold text-navy" value={novo.status} onChange={e=>setNovo({...novo, status:e.target.value})}>
+                      <option value="pago">PAGO / REALIZADO</option>
+                      <option value="pendente">PENDENTE / FUTURO</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-500">CATEGORIA</label>
+                    <select className="w-full p-2 border rounded mt-1 text-sm" value={novo.categoria} onChange={e=>setNovo({...novo, categoria:e.target.value})}>
+                      <option>Honorários Contratuais</option>
+                      <option>Sucumbência</option>
+                      <option>Consultoria</option>
+                      <option>Repasse Cliente</option>
+                      <option>Repasse Parceiros</option> 
+                      <option>Estagiário</option>
+                      <option>Infraestrutura</option>
+                      <option>Pessoal</option>
+                      <option>Tecnologia</option>
+                      <option>Marketing</option>
+                      <option>Impostos</option>
+                      <option>Sócios</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-500">RESPONSÁVEL</label>
+                  <select className="w-full p-2 border rounded mt-1 text-sm" value={novo.responsavel} onChange={e=>setNovo({...novo, responsavel:e.target.value})}>
+                    <option>Escritório</option><option>Evison</option><option>Adiellyson</option>
+                  </select>
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <button onClick={()=>setModal(false)} className="flex-1 py-2 border rounded text-slate-500 hover:bg-slate-50">Cancelar</button>
+                  <button onClick={salvar} className="flex-1 py-2 bg-navy text-white rounded font-bold hover:bg-slate-800">Salvar</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL ALTERAR SENHA */}
+          {modalSenha && (
+            <div className="fixed inset-0 bg-slate-900/50 backdrop-blur flex items-center justify-center z-50 p-4 fade-in no-print">
+              <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 space-y-4">
+                <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2"><Icons.Key/> Alterar Senha</h3>
+                <p className="text-sm text-slate-500">Defina uma nova senha para o seu acesso.</p>
+                
+                <div>
+                  <label className="text-xs font-bold text-slate-500">NOVA SENHA</label>
+                  <input type="password" placeholder="••••" className="w-full p-2 border rounded mt-1" value={novaSenha} onChange={e=>setNovaSenha(e.target.value)}/>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <button onClick={()=>{setModalSenha(false); setNovaSenha("");}} className="flex-1 py-2 border rounded text-slate-500 hover:bg-slate-50">Cancelar</button>
+                  <button onClick={alterarSenha} className="flex-1 py-2 bg-navy text-white rounded font-bold hover:bg-slate-800">Confirmar</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    class ErrorBoundary extends Component {
+      constructor(props) { super(props); this.state = { hasError: false }; }
+      static getDerivedStateFromError(error) { return { hasError: true }; }
+      render() {
+        if (this.state.hasError) return <div className="p-6 text-red-600 text-center">Ocorreu um erro inesperado. Recarregue a página.</div>;
+        return this.props.children; 
       }
-    })
-  });
+    }
 
-  if (!response.ok) {
-    throw new Error('Erro na API do Gemini: ' + response.status);
-  }
-
-  const data = await response.json();
-  const txt = data.candidates[0].content.parts[0].text;
-  
-  // Limpeza de segurança caso a resposta venha com formatação markdown
-  const clean = txt.replace(/```json|```/g,'').trim();
-  return JSON.parse(clean).questions;
-}
-
-/* ──────────────────────────────────────────
-   QUIZ
-────────────────────────────────────────── */
-function renderQuizList(){
-  const sessions=getSess(CU);
-  const pending=sessions.filter(s=>!s.qDone).length;
-  document.getElementById('quiz-sub').textContent=USERS[CU].name+' · '+pending+' quiz'+(pending!==1?'zes':'')+' pendente'+(pending!==1?'s':'');
-
-  const c=document.getElementById('quiz-sess-list');
-  if(!sessions.length){ c.innerHTML='<div class="empty"><h3>Nenhuma sessão</h3><p>Adicione uma sessão de estudos para gerar questões</p></div>'; return; }
-
-  const list=sessions.filter(s=>{
-    if(qFilter==='pending') return !s.qDone;
-    if(qFilter==='done') return s.qDone;
-    return true;
-  }).reverse();
-
-  if(!list.length){ c.innerHTML='<div class="empty" style="padding:28px"><p>Nenhuma sessão nessa categoria</p></div>'; return; }
-
-  c.innerHTML=list.map(s=>{
-    const pct=s.qDone?Math.round(s.qC/s.qT*100):null;
-    return `<div class="sess" style="cursor:pointer" onclick="openQuiz(${JSON.stringify(s).replace(/"/g,'&quot;')})">
-      <div class="sess-top"><div class="sess-subj">${s.subject}</div><div class="sess-date">${s.dayLabel}</div></div>
-      <div class="sess-preview">Dia ${s.dayNum} · ${s.questions?.length||0} questões</div>
-      <div class="chips">
-        <span class="chip">${s.diff==='facil'?'Fácil':s.diff==='medio'?'Médio':'Difícil'}</span>
-        ${s.qDone?`<span class="chip ${pct>=70?'ok':pct>=40?'warn':'err'}">✓ ${s.qC}/${s.qT} (${pct}%)</span>`:'<span class="chip warn">Pendente</span>'}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function fQuiz(f,el){
-  qFilter=f;
-  document.querySelectorAll('#t-quiz .f-tag').forEach(x=>x.classList.remove('on'));
-  el.classList.add('on');
-  renderQuizList();
-}
-
-function openQuiz(sess){
-  qSess=sess; qAns=0; qOk=0;
-  document.getElementById('v-quiz-list').style.display='none';
-  document.getElementById('v-quiz-play').style.display='block';
-  document.getElementById('btn-finish').style.display='none';
-  updateQP();
-
-  const qs=sess.questions||[];
-  document.getElementById('quiz-q-wrap').innerHTML=qs.map((q,i)=>`
-    <div class="quiz-card">
-      <div class="quiz-meta">
-        <span class="q-counter">${i+1} / ${qs.length}</span>
-        <span class="q-badge lv-${q.difficulty||sess.diff}">${q.difficulty==='facil'||sess.diff==='facil'?'Fácil':q.difficulty==='medio'||sess.diff==='medio'?'Médio':'Difícil'}</span>
-      </div>
-      <div class="q-text">${q.question}</div>
-      <div class="q-opts" id="qo-${i}">
-        ${q.options.map((o,oi)=>`<button type="button" class="q-opt" onclick="ansQ(${i},${oi},${q.answer},'${(q.explanation||'').replace(/'/g,"\\'").replace(/\n/g,' ')}',${qs.length})">${o}</button>`).join('')}
-      </div>
-      <div class="q-explain" id="qe-${i}">${q.explanation||''}</div>
-    </div>`).join('');
-}
-
-function ansQ(qi,chosen,correct,expl,total){
-  const opts=document.getElementById('qo-'+qi);
-  if(opts.querySelector('.right,.wrong')) return;
-  opts.querySelectorAll('.q-opt').forEach((b,i)=>{
-    b.disabled=true;
-    if(i===correct) b.classList.add('right');
-    else if(i===chosen) b.classList.add('wrong');
-  });
-  if(chosen===correct) qOk++;
-  qAns++;
-  document.getElementById('qe-'+qi).style.display='block';
-  updateQP();
-  if(qAns===total){
-    document.getElementById('btn-finish').style.display='block';
-    setTimeout(()=>document.getElementById('btn-finish').scrollIntoView({behavior:'smooth'}),200);
-  }
-}
-
-function updateQP(){
-  const total=qSess?.questions?.length||0;
-  document.getElementById('qp-score').textContent=qOk+' / '+qAns;
-  const pct=qAns?Math.round(qOk/qAns*100):0;
-  document.getElementById('qp-pct').textContent=qAns?pct+'% de aproveitamento':'Responda as questões abaixo';
-  document.getElementById('qp-fill').style.width=(total?qAns/total*100:0)+'%';
-}
-
-function finishQuiz(){
-  const total=qSess.questions.length;
-  markQuiz(CU,qSess.id,qOk,total);
-  const pct=Math.round(qOk/total*100);
-  const msg=pct===100?`Perfeito! ${qOk}/${total} — 100%`:pct>=70?`Ótimo resultado: ${qOk}/${total} (${pct}%)`:pct>=50?`Regular: ${qOk}/${total} (${pct}%)`:  `Revise o conteúdo: ${qOk}/${total} (${pct}%)`;
-  toast(msg);
-  pushNotif(CU,`Quiz "${qSess.subject}" concluído: ${qOk}/${total} (${pct}%)`);
-  if(pct===100) confetti();
-  updatePip();
-  renderHome();
-  backQuiz();
-}
-
-function backQuiz(){
-  document.getElementById('v-quiz-list').style.display='block';
-  document.getElementById('v-quiz-play').style.display='none';
-  renderQuizList();
-}
-
-/* ──────────────────────────────────────────
-   METAS
-────────────────────────────────────────── */
-function renderMetas(){
-  renderRanking();
-  renderGoals();
-  renderFC();
-}
-
-function renderRanking(){
-  const pts=uid=>{
-    const s=getSess(uid);
-    const min=s.reduce((a,b)=>a+(b.h||0)*60+(b.m||0),0);
-    const c=s.filter(x=>x.qDone).reduce((a,b)=>a+(b.qC||0),0);
-    return c*10+Math.floor(min/10)+streak(s)*50+s.length*5;
-  };
-  const players=[
-    {uid:'manasses',...USERS.manasses,pts:pts('manasses')},
-    {uid:'gleici',...USERS.gleici,pts:pts('gleici')}
-  ].sort((a,b)=>b.pts-a.pts);
-
-  document.getElementById('ranking').innerHTML=players.map((p,i)=>`
-    <div class="rank-item">
-      <div class="rank-medal">${['🥇','🥈'][i]}</div>
-      <div class="rank-info">
-        <div class="rank-name">${p.emoji} ${p.name}</div>
-        <div class="rank-detail">${getSess(p.uid).filter(x=>x.qDone).reduce((a,b)=>a+(b.qC||0),0)} acertos · ${Math.floor(getSess(p.uid).reduce((a,b)=>a+(b.h||0)*60+(b.m||0),0)/60)}h estudadas</div>
-      </div>
-      <div class="rank-pts">${p.pts}<span style="font-size:11px;color:var(--ink3)">pts</span></div>
-    </div>`).join('');
-}
-
-function renderGoals(){
-  const goals=getGoals(CU);
-  const c=document.getElementById('goals-list');
-  if(!goals.length){ c.innerHTML='<div class="empty" style="padding:16px"><p>Nenhuma meta ainda</p></div>'; return; }
-  c.innerHTML=goals.map((g,i)=>`
-    <div class="goal-item">
-      <div class="goal-check ${g.done?'done':''}" onclick="toggleGoal(${i})"></div>
-      <div class="goal-text ${g.done?'done':''}">${g.text}</div>
-      <button type="button" class="goal-rm" onclick="rmGoal(${i})">×</button>
-    </div>`).join('');
-}
-
-function addGoal(){
-  const v=document.getElementById('goal-inp').value.trim();
-  if(!v) return;
-  const goals=getGoals(CU); goals.push({text:v,done:false});
-  saveGoals(CU,goals); document.getElementById('goal-inp').value=''; renderGoals();
-}
-
-function toggleGoal(i){ const g=getGoals(CU); g[i].done=!g[i].done; saveGoals(CU,g); renderGoals(); }
-function rmGoal(i){ const g=getGoals(CU); g.splice(i,1); saveGoals(CU,g); renderGoals(); }
-
-function renderFC(){
-  const sessions=getSess(CU);
-  if(!sessions.length) return;
-  fcCards=sessions.map(s=>({ front:`${s.subject} — Dia ${s.dayNum}`, back:s.body.slice(0,220)+(s.body.length>220?'…':'') }));
-  fcIdx=0;
-  document.getElementById('fc-nav').style.display='flex';
-  showFC();
-}
-
-function showFC(){
-  const c=fcCards[fcIdx];
-  document.getElementById('fc-area').innerHTML=`
-    <div class="flashcard" id="fc" onclick="this.classList.toggle('flip')">
-      <div class="fc-inner">
-        <div class="fc-face">
-          <div class="fc-tag">Toque para revelar</div>
-          <div class="fc-text">${c.front}</div>
-        </div>
-        <div class="fc-face fc-back">
-          <div class="fc-tag">Resumo</div>
-          <div class="fc-text" style="font-size:13px">${c.back}</div>
-        </div>
-      </div>
-    </div>
-    <div style="text-align:center;font-size:11px;color:var(--ink4);margin-top:6px">${fcIdx+1} de ${fcCards.length}</div>`;
-}
-
-function fcNext(){ fcIdx=(fcIdx+1)%fcCards.length; showFC(); }
-function fcPrev(){ fcIdx=(fcIdx-1+fcCards.length)%fcCards.length; showFC(); }
-
-function changePwd(){
-  const p=document.getElementById('new-pwd').value;
-  if(p.length<4){ toast('Senha deve ter pelo menos 4 caracteres'); return; }
-  setPass(CU,p); document.getElementById('new-pwd').value=''; toast('Senha alterada com sucesso');
-}
-
-/* ──────────────────────────────────────────
-   TIMER
-────────────────────────────────────────── */
-function timerToggle(){ timerOn ? timerStop() : timerStart(); }
-function timerStart(){
-  timerOn=true;
-  document.getElementById('timer-start-btn').textContent='Pausar';
-  document.getElementById('timer-disp').classList.add('running');
-  timerInt=setInterval(()=>{
-    timerSec++;
-    const h=Math.floor(timerSec/3600), m=Math.floor((timerSec%3600)/60), s=timerSec%60;
-    document.getElementById('timer-disp').textContent=`${pad(h)}:${pad(m)}:${pad(s)}`;
-    document.getElementById('f-h').value=h;
-    document.getElementById('f-m').value=m;
-  },1000);
-}
-function timerStop(){
-  timerOn=false; clearInterval(timerInt); timerInt=null;
-  document.getElementById('timer-start-btn').textContent='Continuar';
-  document.getElementById('timer-disp').classList.remove('running');
-}
-function timerReset(){
-  timerStop(); timerSec=0;
-  document.getElementById('timer-disp').textContent='00:00:00';
-  document.getElementById('timer-start-btn').textContent='Iniciar';
-}
-function pad(n){ return String(n).padStart(2,'0'); }
-
-/* ──────────────────────────────────────────
-   NOTIFICATIONS
-────────────────────────────────────────── */
-function toggleNotif(){
-  notifOpen=!notifOpen;
-  const panel=document.getElementById('notif-panel');
-  const overlay=document.getElementById('notif-overlay');
-  if(notifOpen){
-    panel.classList.add('open'); overlay.classList.add('open');
-    const ns=getNotifs(CU);
-    document.getElementById('notif-list').innerHTML=ns.length?
-      ns.map(n=>`<div class="notif-item"><div class="notif-time">${n.t}</div>${n.msg}</div>`).join(''):
-      '<p style="font-size:13px;color:var(--ink3);text-align:center;padding:16px">Nenhuma notificação</p>';
-    clearNotifs(CU); renderNotifBadge();
-  } else {
-    panel.classList.remove('open'); overlay.classList.remove('open');
-  }
-}
-function closeNotif(){ notifOpen=false; document.getElementById('notif-panel').classList.remove('open'); document.getElementById('notif-overlay').classList.remove('open'); }
-function renderNotifBadge(){ document.getElementById('notif-badge').style.display=getNotifs(CU).length?'block':'none'; }
-
-/* ──────────────────────────────────────────
-   UTILS
-────────────────────────────────────────── */
-function streak(sessions){
-  const days=new Set(sessions.map(s=>s.date));
-  let n=0; const d=new Date();
-  while(true){ const k=d.toISOString().slice(0,10); if(days.has(k)){n++;d.setDate(d.getDate()-1);}else break; }
-  return n;
-}
-
-function updatePip(){
-  const n=getSess(CU).filter(s=>!s.qDone).length;
-  const pip=document.getElementById('quiz-pip');
-  if(n>0){ pip.style.display='flex'; pip.textContent=n; } else pip.style.display='none';
-}
-
-let toastT=null;
-function toast(msg){
-  const el=document.getElementById('toast');
-  el.textContent=msg; el.classList.add('show');
-  clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),3000);
-}
-
-function confetti(){
-  const cols=['#2C3E8C','#8C2C5A','#1A6B3C','#7A4F00','#4A2C8C'];
-  for(let i=0;i<50;i++){
-    const el=document.createElement('div');
-    el.className='cf';
-    const rot=Math.random()*360;
-    el.style.cssText=`left:${Math.random()*100}vw;top:-10px;width:${5+Math.random()*5}px;height:${5+Math.random()*5}px;background:${cols[Math.floor(Math.random()*cols.length)]};border-radius:${Math.random()>.5?'50%':'2px'};--rot:${rot}deg;animation-delay:${Math.random()*.4}s;animation-duration:${1.8+Math.random()*.8}s`;
-    document.body.appendChild(el);
-    setTimeout(()=>el.remove(),3000);
-  }
-}
-</script>
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<ErrorBoundary><AppContent /></ErrorBoundary>);
+  </script>
 </body>
 </html>
